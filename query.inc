@@ -35,21 +35,24 @@ define query => type {
     
     data
         private   query,
+        private   query_params,
         public    data_loaded,
         public    col_names,
         public    result_type
 
     public onCreate(result_type::string, ...) => {
-        .query       = inline_type(:#rest)
-        .data_loaded = false
-        .result_type = #result_type
+        .query_params = #rest
+        .data_loaded  = false
+        .result_type  = #result_type
     }
     public onCreate(...) => {
         .onCreate('query_result', (:#rest))
     }
     
     protected load_data => {
-        .query->capi->invoke(.query->dsInfo)
+        .query = inline_type(:.query_params)
+        .query->capi->invoke(.query->dsInfo)        
+        
         .col_names = (
             with col_info in .query->dsinfo->getSet(1)->get(INLINE_COLUMNINFO_POS) 
             select #col_info->get(INLINE_COLINFO_NAME_POS)->asString
@@ -61,7 +64,6 @@ define query => type {
     public forEach => {
         not .data_loaded? .load_data
         
-        local(gb) = givenBlock
         //For now, assume one result set
         //loop(.query->dsinfo->getSet(1)->get(INLINE_FOUNDCOUNT_POS)) => {
         // loop currently breaks iterate (it's a bug)
@@ -79,7 +81,7 @@ define query => type {
                     #ret->insert(loop_value=#row->get(loop_count))
                 }
             }
-            #gb->invoke(\(.result_type)(#ret))
+            givenBlock(\(.result_type)(#ret))
         }
     }
 }
