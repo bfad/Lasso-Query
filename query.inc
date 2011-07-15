@@ -1,19 +1,36 @@
+/*
+* List of method with no paramters that we won't be able to use:
+*   ascopy
+*   asstring
+*   ascopydeep
+*   type
+*   trait
+*   parent
+*   invoke
+*   listmethods
+*   oncreate
+*/
 define trait_query_result => trait {
     require __cols::map
     
-    provide _unknowntag() => {
-        fail_if(not .__cols->contains(method_name->asString), error_code_methodNotFound, error_msg_methodNotFound)
-        
-        return .__cols->find(method_name->asString)
-    }
+    provide _unknowntag() => { return .c(method_name->asString) }
     provide _unknowntag(rhs) => {
         local(method_name) = method_name->asString
         fail_if(not #method_name->endsWith('='), error_code_methodNotFound, error_msg_methodNotFound)
         #method_name->remove(#method_name->size)
-        fail_if(not .__cols->contains(#method_name), error_code_methodNotFound, error_msg_methodNotFound)
         
-        .__cols->find(#method_name) = #rhs
+        .c(#method_name) = #rhs
     }
+    provide c(col::string) => {
+        fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
+        return .__cols->find(#col)
+    }
+    provide c=(rhs, col::string) => {
+        fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
+        .__cols->find(#col) = #rhs
+    }
+    provide c() => .c('c')
+    provide c=(rhs::string) => { .c('c') = #rhs }
     
     provide +(s::string) => {
         return .asString + #s
