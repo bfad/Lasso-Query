@@ -36,42 +36,57 @@ define query => type {
     data
         private   query,
         private   query_params,
-        public    data_loaded,
-        public    col_names,
-        public    result_type
+        public    data_loaded = false,
+        public    result_type,
+        public    set
 
+    public onCreate(result_type::trait_array, ...) => {
+        .result_type = #result_type
+        .onCreate((:#rest))
+    }
     public onCreate(result_type::string, ...) => {
-        .query_params = #rest
-        .data_loaded  = false
-        .result_type  = #result_type
+        .result_type  = (:#result_type)
+        .onCreate((:#rest))
     }
     public onCreate(...) => {
-        .onCreate('query_result', (:#rest))
+        .query_params = #rest
     }
     
-    protected load_data => {
+    protected loadData => {
         .query = inline_type(:.query_params)
-        .query->capi->invoke(.query->dsInfo)        
-        
-        .col_names = (
-            with col_info in .query->dsinfo->getSet(1)->get(INLINE_COLUMNINFO_POS) 
-            select #col_info->get(INLINE_COLINFO_NAME_POS)->asString
-        )->asStaticArray
+        .query->capi->invoke(.query->dsInfo)
         
         .data_loaded = true
+        not .set? .set = 1
+    }
+    
+    public set(index::integer) => {
+        .set = (#index > 0 ? #index | 1)
+        return self
     }
     
     public forEach => {
-        not .data_loaded? .load_data
+        not .data_loaded? .loadData
+        
+        local(currSet) = .query->dsInfo->getset(1)
+        local(scope)   = map(
+				::currentinline=.query,
+				   ::currentset=#currSet?#currSet|(:(:), (:), 0)
+        )
+		inline_scopePush(#scope)
+		//.query->named?
+		//	inline_namedPut(.query->named, #scope)
+		handle => { inline_scopePop }
         
         //For now, assume one result set
-        //loop(.query->dsinfo->getSet(1)->get(INLINE_FOUNDCOUNT_POS)) => {
+        //loop(.query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)) => {
         // loop currently breaks iterate (it's a bug)
-        local(i) = .query->dsinfo->getSet(1)->get(INLINE_FOUNDCOUNT_POS)
+        local(i) = .query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
         while(#i--) => {
             local(ret) = map
-            local(row) = .query->dsinfo->getSet(1)->get(INLINE_RESULTROWS_POS)->get(loop_count)
-            iterate(.col_names) => {
+            local(row) = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(loop_count)
+            iterate(.query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)) => {
+                loop_value = loop_value->get(INLINE_COLINFO_NAME_POS)->asString
                 // Create / insert into an array for columns with the same name
                 if(#ret->contains(loop_value)) => {
                     not #ret->find(loop_value)->isA(::array)?
@@ -81,7 +96,12 @@ define query => type {
                     #ret->insert(loop_value=#row->get(loop_count))
                 }
             }
-            givenBlock(\(.result_type)(#ret))
+            // If we can't find a type, use the default query_result
+            if(not .result_type || .result_type->size < .set || not .result_type->get(.set)) => {
+                givenBlock(query_result(#ret))
+            else
+                givenBlock(\(.result_type->get(.set))(#ret))
+            }
         }
     }
 }
