@@ -24,7 +24,7 @@ describe("This test file") => {
                 #conn_id = field('con_id')
             }
         }
-        expect(error_code, error_code_noerror)
+        expect(error_code_noerror, error_code)
         expect(boolean(#conn_id->isA(::integer)))
     }
 }
@@ -38,8 +38,8 @@ describe(::query) => {
                 #conn_id = #1->con_id
             }
         }
-        expect(error_code, error_code_noerror)
-        expect(#conn_id, #inline_conn_id)
+        expect(error_code_noerror, error_code)
+        expect(#inline_conn_id, #conn_id)
     }
     
     it("shares the connection when executed inside an inline though declared outside of it") => {
@@ -52,8 +52,8 @@ describe(::query) => {
                 #conn_id = #1->con_id
             }
         }
-        expect(error_code, error_code_noerror)
-        expect(#conn_id, #inline_conn_id)
+        expect(error_code_noerror, error_code)
+        expect(#inline_conn_id, #conn_id)
     }
     
     it("doesn't share the connection when executed outside an inline though declared inside of it") => {
