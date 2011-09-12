@@ -51,11 +51,15 @@ define query => type {
     trait { import trait_queriable }
     
     data
-        private   query,
-        private   query_params,
-        public    data_loaded = false,
-        public    result_type,
-        public    set
+        private query,
+        private query_params,
+        private data_loaded = false,
+        private result_type,
+        public  set
+    // Public Getters
+    public data_loaded => .'data_loaded',
+           result_type => .'result_type'
+
 
     public onCreate(result_type::trait_array, ...) => {
         .result_type = #result_type
@@ -68,12 +72,13 @@ define query => type {
     public onCreate(...) => {
         .query_params = #rest
     }
+
     
     protected loadData => {
         .query = inline_type(:.query_params)
         .query->capi->invoke(.query->dsInfo)
         
-        .data_loaded = true
+        .'data_loaded' = true
         not .set? .set = 1
     }
     
@@ -83,7 +88,7 @@ define query => type {
     }
     
     public forEach => {
-        not .data_loaded? .loadData
+        not .'data_loaded'? .loadData
         
         local(currSet) = .query->dsInfo->getset(1)
         local(scope)   = map(
@@ -95,7 +100,7 @@ define query => type {
 		//	inline_namedPut(.query->named, #scope)
 		handle => { inline_scopePop }
         
-        //For now, assume one result set
+        // For the current result set, loop through the returned rows
         //loop(.query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)) => {
         // loop currently breaks iterate (it's a bug)
         local(i) = .query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
