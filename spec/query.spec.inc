@@ -1,9 +1,10 @@
-if(not lasso_tagExists(::query)) => {
+if(not var(__loaded_query)) => {
     // This should let us run this anywhere and still properly import the file
     local(path_here) = io_file_getcwd + '/' + {}->callsite_file->stripLastComponent
     not #path_here->endsWith('/') ? #path_here += '/'
     local(f) = file(#path_here + '../query.inc')
     sourcefile(#f->readString, #f->path, false, false)->invoke
+    var(__loaded_query) = true
 }
 
 lcapi_loadModule(sys_userCapiModulePath + 'MySQLConnector.dylib')
@@ -150,6 +151,12 @@ describe(::query) => {
             expect(#row->con_id->isA(::array) != 0)
             expect('foo', #row->con_id->second)
         }
+    }
+
+    it("implements first method") => {
+        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id, 'foo' AS con_id")
+
+        expect(#query->first->isA(::query_result) != 0)
     }
 }
 }

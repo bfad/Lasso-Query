@@ -48,7 +48,7 @@ define query_result => type {
 }
 
 define query => type {
-    trait { import trait_queriable }
+    trait { import trait_queriable, trait_positionallyKeyed }
     
     data
         private query,
@@ -81,49 +81,71 @@ define query => type {
         .'data_loaded' = true
         not .set? .set = 1
     }
+
+    public run => .loadData
     
     public set(index::integer) => {
         .set = (#index > 0 ? #index | 1)
         return self
     }
-    
+
+    public size::integer => {
+        not .data_loaded? .loadData
+
+        return .query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
+    }
+
+    public keys::staticarray => {
+        not .data_loaded? .loadData
+
+        return (1 to .size)->asStaticArray
+    }
+
+    public get(key::integer) => {
+        not .data_loaded? .loadData
+
+        local(ret) = map
+        local(row) = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
+
+        // Run through the columns for the row
+        iterate(.query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)) => {
+            loop_value = loop_value->get(INLINE_COLINFO_NAME_POS)->asString
+            // Create / insert into an array for columns with the same name
+            if(#ret->contains(loop_value)) => {
+                not #ret->find(loop_value)->isA(::array)?
+                    #ret->find(loop_value) = array(#ret->find(loop_value))
+                #ret->find(loop_value)->insert(#row->get(loop_count))
+            else
+                #ret->insert(loop_value=#row->get(loop_count))
+            }
+        }
+        // If we can't find a type, use the default query_result
+        if(not .result_type || .result_type->size < .set || not .result_type->get(.set)) => {
+            return query_result(#ret)
+        else
+            return(\(.result_type->get(.set))(#ret))
+        }
+    }
+
     public forEach => {
-        not .'data_loaded'? .loadData
+        not .data_loaded? .loadData
         
         local(currSet) = .query->dsInfo->getset(1)
         local(scope)   = map(
-				::currentinline=.query,
-				   ::currentset=#currSet?#currSet|(:(:), (:), 0)
+                ::currentinline=.query,
+                   ::currentset=#currSet?#currSet|(:(:), (:), 0)
         )
-		inline_scopePush(#scope)
-		//.query->named?
-		//	inline_namedPut(.query->named, #scope)
-		handle => { inline_scopePop }
+        inline_scopePush(#scope)
+        //.query->named?
+        //  inline_namedPut(.query->named, #scope)
+        handle => { inline_scopePop }
         
         // For the current result set, loop through the returned rows
         //loop(.query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)) => {
         // loop currently breaks iterate (it's a bug)
-        local(i) = .query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
+        local(i) = .size
         while(#i--) => {
-            local(ret) = map
-            local(row) = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(loop_count)
-            iterate(.query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)) => {
-                loop_value = loop_value->get(INLINE_COLINFO_NAME_POS)->asString
-                // Create / insert into an array for columns with the same name
-                if(#ret->contains(loop_value)) => {
-                    not #ret->find(loop_value)->isA(::array)?
-                        #ret->find(loop_value) = array(#ret->find(loop_value))
-                    #ret->find(loop_value)->insert(#row->get(loop_count))
-                else
-                    #ret->insert(loop_value=#row->get(loop_count))
-                }
-            }
-            // If we can't find a type, use the default query_result
-            if(not .result_type || .result_type->size < .set || not .result_type->get(.set)) => {
-                givenBlock(query_result(#ret))
-            else
-                givenBlock(\(.result_type->get(.set))(#ret))
-            }
+            givenBlock(.get(loop_count))
         }
     }
 }
