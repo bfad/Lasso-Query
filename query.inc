@@ -47,6 +47,9 @@ define query_result => type {
     }
 }
 
+if(not lasso_tagExists(::inline_type)) => {inline_type}
+define inline_type->accessDoClose => .doClose
+
 define query => type {
     trait { import trait_queriable, trait_positionallyKeyed }
     
@@ -76,6 +79,12 @@ define query => type {
     
     protected loadData => {
         .query = inline_type(:.query_params)
+
+        .query->capi and .query->accessDoClose?
+            handle => { .query->close }
+        .query->capi and .query->dsInfo->action == lcapi_datasourcePrepareSQL ?
+            handle => { .query->closePrepared }
+
         .query->capi->invoke(.query->dsInfo)
         
         .'data_loaded' = true
