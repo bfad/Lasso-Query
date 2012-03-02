@@ -158,5 +158,33 @@ describe(::query) => {
 
         expect(#query->first->isA(::query_result) != 0)
     }
+    
+    it("has [query->fieldNames] return an array of the field names") => {
+        local(query)  = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id, VERSION()")
+        
+        expect(#query->fieldNames->isA(::staticarray) != 0)
+        expect(#query->fieldNames->get(1) == 'con_id')
+        expect(#query->fieldNames->get(2) == 'VERSION()')
+    }
+    
+    it("has [query->columnNames] return an array of the field names") => {
+        local(query)  = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id, VERSION()")
+        
+        expect(#query->columnNames->isA(::staticarray) != 0)
+        expect(#query->columnNames->get(1) == 'con_id')
+        expect(#query->columnNames->get(2) == 'VERSION()')
+    }
+    
+    it("has [query->foundCount] return the number of rows") => {
+        local(query) = query('tmp_query_result', -host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
+
+        expect(1, #query->foundCount)
+    }
+    
+    it("returns the number of sets when [query->numSets] is called") => {
+        local(query) = query('tmp_query_result', -host=#conn, -sql="SELECT CONNECTION_ID() AS con_id;SELECT VERSION();")
+            
+        expect(2, #query->numSets)
+    }
 }
 }

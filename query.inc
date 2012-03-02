@@ -97,12 +97,29 @@ define query => type {
         .set = (#index > 0 ? #index | 1)
         return self
     }
+    
+    public numSets::integer => {
+        not .data_loaded? .loadData
+        
+        return .query->dsinfo->numSets
+    }
 
     public size::integer => {
         not .data_loaded? .loadData
 
         return .query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
     }
+    public foundCount::integer => .size
+    
+    public fieldNames::staticarray => {
+        not .data_loaded? .loadData
+        
+        return (
+            with col in .query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)
+            select #col->get(INLINE_COLINFO_NAME_POS)
+        )->asStaticArray
+    }
+    public columnNames::staticarray => .fieldNames
 
     public keys::staticarray => {
         not .data_loaded? .loadData
