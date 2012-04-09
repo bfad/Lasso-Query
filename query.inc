@@ -120,6 +120,21 @@ define query => type {
         )->asStaticArray
     }
     public columnNames::staticarray => .fieldNames
+    
+    public keyName => {
+        // code adapted from keyColumn_name
+        not .data_loaded? .loadData
+    	local(key_name) = .query->'workingkeyfield_name'
+        
+        #key_name-> size == 0 ? 
+            return '_RECID_'
+    	return #key_name
+    }
+    public keyValue => {
+        // code from keyColumn_value
+        not .data_loaded? .loadData
+        return .query->dsInfo->forcedRowID
+    }
 
     public keys::staticarray => {
         not .data_loaded? .loadData

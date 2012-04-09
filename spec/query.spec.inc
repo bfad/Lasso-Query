@@ -176,15 +176,24 @@ describe(::query) => {
     }
     
     it("has [query->foundCount] return the number of rows") => {
-        local(query) = query('tmp_query_result', -host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
+        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
 
         expect(1, #query->foundCount)
     }
     
     it("returns the number of sets when [query->numSets] is called") => {
-        local(query) = query('tmp_query_result', -host=#conn, -sql="SELECT CONNECTION_ID() AS con_id;SELECT VERSION();")
+        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id;SELECT VERSION();")
             
         expect(2, #query->numSets)
+    }
+    
+    it("returns the value set by the -keyField parameter when [query->keyName] is called and the parameter is set") => {
+        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id", -keyField='con_id')
+        expect('con_id', #query->keyName)
+    }
+    it("returns '_RECID_' when [query->keyName] is called and -keyfield parameter is unset") => {
+        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
+        expect('_RECID_', #query->keyName)
     }
 }
 }
