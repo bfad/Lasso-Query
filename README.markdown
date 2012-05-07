@@ -38,6 +38,7 @@ Each of the examples below assume that you have connection to a database named "
 * name\_first 
 * name\_middle
 * name\_last
+* type
 * email
 
 ### Basic Example
@@ -51,12 +52,13 @@ In this example, we will find all the people whose name\_last starts with the le
     
 ### Example with HTML
 
-Here we're displaying various fields in an HTML table for everyone with a last name starting with the letter "A".
+Here we're displaying various fields in an HTML table for everyone with a last name starting with the letter "A". Notice that the last column uses the `[query\_result->c()]` method to reference `type` &mdash; this is because there is already a built-in method named `type` to every Lasso type.
 
     <?=    
         local(people) = query(
             -database="rhino",
-                 -sql="SELECT p.name_preferred, p.name_first, p.name_middle, p.name_last, p.email
+                 -sql="SELECT p.name_preferred, p.name_first, p.name_middle, 
+                         p.name_last, p.email, p.type
                       FROM people p WHERE p.name_last LIKE 'A%'"
         )
     ?>
