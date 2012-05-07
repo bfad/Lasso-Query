@@ -43,7 +43,7 @@ Each of the examples below assume that you have connection to a database named "
 
 ### Basic Example
 
-In this example, we will find all the people whose name\_last starts with the letter "A" and stick their last name into an array.
+In this example, we will find all the people whose `name_last` starts with the letter "A" and stick their last name into an array.
 
     local(a_last_names) = array
     query(-database='rhino', -table='people', -operator='bw', 'name_last'='A')->forEach => {
@@ -52,7 +52,7 @@ In this example, we will find all the people whose name\_last starts with the le
     
 ### Example with HTML
 
-Here we're displaying various fields in an HTML table for everyone with a last name starting with the letter "A". Notice that the last column uses the `[query\_result->c()]` method to reference `type` &mdash; this is because there is already a built-in method named `type` to every Lasso type.
+Here we're displaying various fields in an HTML table for everyone with a last name starting with the letter "A". Notice that the last column uses the `[query_result->c()]` method to reference `type` &mdash; this is because there is already a built-in method named `type` to every Lasso type.
 
     <?=    
         local(people) = query(
@@ -75,7 +75,7 @@ Here we're displaying various fields in an HTML table for everyone with a last n
     
 ### Example With Custom [trait\_query\_result] Type
 
-In this example we are using a custom [trait\_query\_result] type to add some additional member methods, and then use those methods while displaying in an HTML table everyone whose name begins with the letter "A".
+In this example we are using a custom `[trait_query_result]` type to add some additional member methods, and then use those methods while displaying in an HTML table everyone whose name begins with the letter "A".
 
     <?=
         define person => type {
