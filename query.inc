@@ -147,17 +147,21 @@ define query => type {
 
         local(ret) = map
         local(row) = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
+        
+        //TODO: Consider getting the column names once for each set
 
         // Run through the columns for the row
-        iterate(.query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)) => {
-            loop_value = loop_value->get(INLINE_COLINFO_NAME_POS)->asString
-            // Create / insert into an array for columns with the same name
-            if(#ret->contains(loop_value)) => {
-                not #ret->find(loop_value)->isA(::array)?
-                    #ret->find(loop_value) = array(#ret->find(loop_value))
-                #ret->find(loop_value)->insert(#row->get(loop_count))
+        local(i) = 0
+        with cpos in .query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)
+        let i = ++#i
+        let column_name = #cpos->get(INLINE_COLINFO_NAME_POS)->asString
+        do {
+            if(#ret->contains(#column_name)) => {
+                not #ret->find(#column_name)->isA(::array)?
+                    #ret->find(#column_name) = array(#ret->find(#column_name))
+                #ret->find(#column_name)->insert(#row->get(#i))
             else
-                #ret->insert(loop_value=#row->get(loop_count))
+                #ret->insert(#column_name=#row->get(#i))
             }
         }
         // If we can't find a type, use the default query_result
