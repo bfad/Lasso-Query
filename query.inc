@@ -162,15 +162,17 @@ define query => type {
         local(ret)  = map
         local(row)  = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
         local(cols) = .'set_cols'->get(.set)
+        local(i)    = 0
         
         // Run through the columns for the row
-        loop(#row->size) => {
-            if(#ret->contains(#cols->get(loop_count))) => {
-                not #ret->find(#cols->get(loop_count))->isA(::array)?
-                    #ret->find(#cols->get(loop_count)) = array(#ret->find(#cols->get(loop_count)))
-                #ret->find(#cols->get(loop_count))->insert(#row->get(loop_count))
+        while(#row->size > #i) => {
+            #i++
+            if(#ret->contains(#cols->get(#i))) => {
+                not #ret->find(#cols->get(#i))->isA(::array)?
+                    #ret->find(#cols->get(#i)) = array(#ret->find(#cols->get(#i)))
+                #ret->find(#cols->get(#i))->insert(#row->get(#i))
             else
-                #ret->insert(#cols->get(loop_count) = #row->get(loop_count))
+                #ret->insert(#cols->get(#i) = #row->get(#i))
             }
         }
         
