@@ -58,6 +58,7 @@ define query => type {
         private query_params,
         private data_loaded = false,
         private result_type,
+        private set_cols,
         public  set
     // Public Getters
     public data_loaded => .'data_loaded',
@@ -89,6 +90,19 @@ define query => type {
         
         .'data_loaded' = true
         not .set? .set = 1
+        .'set_cols' = array
+        loop(.numSets) => { .'set_cols'->insert(void) }
+    }
+    
+    private loadSetCol(set::integer=0) => {
+        #set == 0? #set = .set
+            
+        .'set_cols'->get(#set)? return
+        
+        .'set_cols'->get(#set) = (
+            with col in .query->dsinfo->getSet(#set)->get(INLINE_COLUMNINFO_POS)
+            select #col->get(INLINE_COLINFO_NAME_POS)
+        )->asStaticarray
     }
 
     public run => .loadData
@@ -114,10 +128,9 @@ define query => type {
     public fieldNames::staticarray => {
         not .data_loaded? .loadData
         
-        return (
-            with col in .query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)
-            select #col->get(INLINE_COLINFO_NAME_POS)
-        )->asStaticArray
+        .loadSetCol
+        
+        return .'set_cols'->get(.set)
     }
     public columnNames::staticarray => .fieldNames
     
@@ -144,26 +157,23 @@ define query => type {
 
     public get(key::integer) => {
         not .data_loaded? .loadData
+        .loadSetCol
 
-        local(ret) = map
-        local(row) = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
+        local(ret)  = map
+        local(row)  = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
+        local(cols) = .'set_cols'->get(.set)
         
-        //TODO: Consider getting the column names once for each set
-
         // Run through the columns for the row
-        local(i) = 0
-        with cpos in .query->dsinfo->getSet(.set)->get(INLINE_COLUMNINFO_POS)
-        let i = ++#i
-        let column_name = #cpos->get(INLINE_COLINFO_NAME_POS)->asString
-        do {
-            if(#ret->contains(#column_name)) => {
-                not #ret->find(#column_name)->isA(::array)?
-                    #ret->find(#column_name) = array(#ret->find(#column_name))
-                #ret->find(#column_name)->insert(#row->get(#i))
+        loop(#row->size) => {
+            if(#ret->contains(#cols->get(loop_count))) => {
+                not #ret->find(#cols->get(loop_count))->isA(::array)?
+                    #ret->find(#cols->get(loop_count)) = array(#ret->find(#cols->get(loop_count)))
+                #ret->find(#cols->get(loop_count))->insert(#row->get(loop_count))
             else
-                #ret->insert(#column_name=#row->get(#i))
+                #ret->insert(#cols->get(loop_count) = #row->get(loop_count))
             }
         }
+        
         // If we can't find a type, use the default query_result
         if(not .result_type || .result_type->size < .set || not .result_type->get(.set)) => {
             return query_result(#ret)
