@@ -79,6 +79,8 @@ define query => type {
 
     
     protected loadData => {
+        .data_loaded? return
+        
         .query = inline_type(:.query_params)
 
         .query->capi and .query->accessDoClose?
@@ -113,20 +115,20 @@ define query => type {
     }
     
     public numSets::integer => {
-        not .data_loaded? .loadData
+        .loadData
         
         return .query->dsinfo->numSets
     }
 
     public size::integer => {
-        not .data_loaded? .loadData
+        .loadData
 
         return .query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
     }
     public foundCount::integer => .size
     
     public fieldNames::staticarray => {
-        not .data_loaded? .loadData
+        .loadData
         
         .loadSetCol
         
@@ -136,7 +138,7 @@ define query => type {
     
     public keyName => {
         // code adapted from keyColumn_name
-        not .data_loaded? .loadData
+        .loadData
     	local(key_name) = .query->'workingkeyfield_name'
         
         #key_name-> size == 0 ? 
@@ -145,18 +147,18 @@ define query => type {
     }
     public keyValue => {
         // code from keyColumn_value
-        not .data_loaded? .loadData
+        .loadData
         return .query->dsInfo->forcedRowID
     }
 
     public keys::staticarray => {
-        not .data_loaded? .loadData
+        .loadData
 
         return (1 to .size)->asStaticArray
     }
 
     public get(key::integer) => {
-        not .data_loaded? .loadData
+        .loadData
         .loadSetCol
 
         local(ret)  = map
@@ -185,9 +187,9 @@ define query => type {
     }
 
     public forEach => {
-        not .data_loaded? .loadData
+        .loadData
         
-        local(currSet) = .query->dsInfo->getset(1)
+        local(currSet) = .query->dsInfo->getset(.set)
         local(scope)   = map(
                 ::currentinline=.query,
                    ::currentset=#currSet?#currSet|(:(:), (:), 0)
