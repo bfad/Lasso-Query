@@ -80,10 +80,12 @@ In this example we are using a custom `[trait_query_result]` type to add some ad
     <?=
         define person => type {
             trait { import trait_query_result }
-            data protected __cols::map
+            data protected __cols,
+                 protected __data
     
-            public onCreate(cols::map) => {
+            public onCreate(cols::trait_positionallyKeyed, data::trait_positionallyKeyed) => {
                 .'__cols' = #cols
+                .'__data' = #data
             }
     
             public .name_preferred => {
