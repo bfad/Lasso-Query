@@ -1,17 +1,17 @@
-/*
-* List of method with no paramters that we won't be able to use:
-*   ascopy
-*   asstring
-*   ascopydeep
-*   type
-*   trait
-*   parent
-*   invoke
-*   listmethods
-*   oncreate
-*/
+if(not lasso_tagExists(::trait_positionallyKeyed)) => {trait_positionallyKeyed}
+define trait_positionallyKeyed->findFirst(val) => { 
+    local(i) = 1
+    {
+        #i > .size? return void
+        .get(#i) == #val ? return #i
+        #i++
+        currentCapture->restart
+    }()
+}
+
 define trait_query_result => trait {
-    require __cols::map
+    require __cols::trait_positionallyKeyed
+    require __data::trait_positionallyKeyed
     
     provide _unknowntag() => { return .c(method_name->asString) }
     provide _unknowntag(rhs) => {
@@ -23,11 +23,11 @@ define trait_query_result => trait {
     }
     provide c(col::string) => {
         fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
-        return .__cols->find(#col)
+        return .__data->get(.__cols->findFirst(#col))
     }
     provide c=(rhs, col::string) => {
         fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
-        .__cols->find(#col) = #rhs
+        .__data->get(.__cols->findFirst(#col)) = #rhs
     }
     provide c() => .c('c')
     provide c=(rhs::string) => { .c('c') = #rhs }
@@ -39,11 +39,13 @@ define trait_query_result => trait {
 
 define query_result => type {
     trait { import trait_query_result }
-    data protected __cols::map
+    data protected __cols,
+         protected __data
     
-    public onCreate() => { .__cols = map }
-    public onCreate(cols::map) => {
+    public onCreate() => { .__cols = (:); .__data = (:) }
+    public onCreate(cols::trait_positionallyKeyed, data::trait_positionallyKeyed) => {
         .__cols = #cols
+        .__data = #data
     }
 }
 
@@ -161,28 +163,14 @@ define query => type {
         .loadData
         .loadSetCol
 
-        local(ret)  = map
         local(row)  = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
         local(cols) = .'set_cols'->get(.set)
-        local(i)    = 0
-        
-        // Run through the columns for the row
-        while(#row->size > #i) => {
-            #i++
-            if(#ret->contains(#cols->get(#i))) => {
-                not #ret->find(#cols->get(#i))->isA(::array)?
-                    #ret->find(#cols->get(#i)) = array(#ret->find(#cols->get(#i)))
-                #ret->find(#cols->get(#i))->insert(#row->get(#i))
-            else
-                #ret->insert(#cols->get(#i) = #row->get(#i))
-            }
-        }
         
         // If we can't find a type, use the default query_result
         if(not .result_type || .result_type->size < .set || not .result_type->get(.set)) => {
-            return query_result(#ret)
+            return query_result(#cols, #row)
         else
-            return(\(.result_type->get(.set))(#ret))
+            return(\(.result_type->get(.set))(#cols, #row))
         }
     }
 
@@ -202,6 +190,7 @@ define query => type {
         // For the current result set, loop through the returned rows
         //loop(.query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)) => {
         // loop currently breaks iterate (it's a bug)
+        // (I've also found this to be faster than even a plain capture block with currentCapture->restart)
         local(i) = .size
         while(#i--) => {
             givenBlock(.get(loop_count))

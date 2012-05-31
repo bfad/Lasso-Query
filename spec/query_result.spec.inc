@@ -15,7 +15,7 @@ describe(::query_result) => {
             'second'='bar',
              'third'='baz',
         )
-        var(qr) = query_result($values)
+        var(qr) = query_result($values->keys, $values->values)
     }
     
     it("returns the value when the method is a key") => {
@@ -65,7 +65,7 @@ describe(::query_result) => {
     
     describe("'c' method without arguments") => {
         it("returns the value for c in the map") => {
-            $qr = query_result(map('c'='rhino'))
+            $qr = query_result((:'c'), (:'rhino'))
             
             expect($qr->c  , 'rhino')
             expect($qr->c(), 'rhino')
@@ -81,7 +81,7 @@ describe(::query_result) => {
         }
         
         it("updates the value for c on assignment") => {
-            $qr = query_result(map('c'='rhino'))
+            $qr = query_result((:'c'), (:'rhino'))
             
             $qr->c = 'theta'
             expect($qr->c  , 'theta')

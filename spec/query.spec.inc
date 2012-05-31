@@ -129,8 +129,8 @@ describe(::query) => {
         define tmp_query_result => type {
             parent query_result
             
-            public onCreate(arg::map) => {
-                ..onCreate(#arg)
+            public onCreate(p0,p1) => {
+                ..onCreate(#p0, #p1)
             }
         }
         
@@ -143,13 +143,12 @@ describe(::query) => {
         }
     }
 
-    it("stores values in an [array] when multiple columns share the same name") => {
-        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id, 'foo' AS con_id")
+    it("returns the first value found when multiple columns share the same name") => {
+        local(query) = query(-host=#conn, -sql="SELECT 'foo' AS con_id, CONNECTION_ID() AS con_id")
         
         with row in #query do => {
             expect(#row->isA(::query_result)  != 0)
-            expect(#row->con_id->isA(::array) != 0)
-            expect('foo', #row->con_id->second)
+            expect('foo', #row->con_id)
         }
     }
 
