@@ -158,6 +158,30 @@ define query => type {
 
         return (1 to .size)->asStaticArray
     }
+    
+    public rowsArrayMap => {
+        .loadData
+        .loadSetCol
+        
+        local(
+            rows    = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS),
+            cols    = .'set_cols'->get(.set),
+            output  = array,
+            col_map = map,
+            i       = 0
+        )
+        
+        while(#i < #rows->size) => {
+            #i++
+            local(tmp) = map
+            loop(#cols->size) => {
+                #tmp->insert(#cols->get(loop_count) = #rows->get(#i)->get(loop_count))
+            }
+            #output->insert(#tmp)
+        }
+        
+    	return #output
+    }
 
     public get(key::integer) => {
         .loadData

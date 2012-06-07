@@ -194,5 +194,19 @@ describe(::query) => {
         local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
         expect('_RECID_', #query->keyName)
     }
+    
+    describe("Method rowsArrayMap") => {
+        it("returns an array, each element of which is a map with the column names as keys and values as the data for that row") => {
+            local(query)  = query(-host=#conn, -sql="SELECT 'a' AS first, 'b' AS second UNION ALL SELECT 'c' AS first, 'd' AS second")
+            local(result) = #query->rowsArrayMap
+            
+            expect('array', #result->type)
+            expect(2, #result->size)
+            expect('a', #result->get(1)->find('first'))
+            expect('b', #result->get(1)->find('second'))
+            expect('c', #result->get(2)->find('first'))
+            expect('d', #result->get(2)->find('second'))
+        }
+    }
 }
 }
