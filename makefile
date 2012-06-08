@@ -6,8 +6,26 @@ LIB_LOC_DIR = /usr/local/lib
 PROJECT = query
 COMMAND_PATH = command/
 
+LASSO_VERSION = $(shell lasso9 -s 'lasso_version(-lassoversion)')
 ifeq ($(KERNEL_NAME),Darwin)
+ifeq ($(LASSO_VERSION),9.1)
 BUILD_UNIVERSAL = 1
+endif
+ifeq ($(LASSO_VERSION),9.1.1)
+BUILD_UNIVERSAL = 1
+endif
+ifeq ($(LASSO_VERSION),9.1.2)
+BUILD_UNIVERSAL = 1
+endif
+ifeq ($(LASSO_VERSION),9.1.3)
+BUILD_UNIVERSAL = 1
+endif
+ifeq ($(LASSO_VERSION),9.1.4)
+BUILD_UNIVERSAL = 1
+endif
+ifeq ($(LASSO_VERSION),9.1.5)
+BUILD_UNIVERSAL = 1
+endif
 endif
 
 ifeq ($(BUILD_UNIVERSAL),1)
