@@ -90,7 +90,20 @@ define query => type {
         .query->capi and .query->dsInfo->action == lcapi_datasourcePrepareSQL ?
             handle => { .query->closePrepared }
 
-        .query->capi->invoke(.query->dsInfo)
+
+        protect => {
+            handle_error => {
+    		    var(__app_profiler__)?
+    			    $__app_profiler__->inlineEnd
+            }
+            var(__app_profiler__)?
+			    $__app_profiler__->inlineBegin(.dsInfo)
+            
+            .query->capi->invoke(.query->dsInfo)
+
+            var(__app_profiler__)?
+			    $__app_profiler__->inlineEnd
+        }
         
         .'data_loaded' = true
         not .set? .set = 1
@@ -104,7 +117,7 @@ define query => type {
         .'set_cols'->get(#set)? return
         
         .'set_cols'->get(#set) = (
-            with col in .query->dsinfo->getSet(#set)->get(INLINE_COLUMNINFO_POS)
+            with col in .query->dsInfo->getSet(#set)->get(INLINE_COLUMNINFO_POS)
             select #col->get(INLINE_COLINFO_NAME_POS)
         )->asStaticarray
     }
@@ -119,13 +132,13 @@ define query => type {
     public numSets::integer => {
         .loadData
         
-        return .query->dsinfo->numSets
+        return .query->dsInfo->numSets
     }
 
     public size::integer => {
         .loadData
 
-        return .query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
+        return .query->dsInfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
     }
     public foundCount::integer => .size
     
@@ -164,7 +177,7 @@ define query => type {
         .loadSetCol
         
         local(
-            rows    = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS),
+            rows    = .query->dsInfo->getSet(.set)->get(INLINE_RESULTROWS_POS),
             cols    = .'set_cols'->get(.set),
             output  = array,
             col_map = map,
@@ -187,7 +200,7 @@ define query => type {
         .loadData
         .loadSetCol
 
-        local(row)  = .query->dsinfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
+        local(row)  = .query->dsInfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
         local(cols) = .'set_cols'->get(.set)
         
         // If we can't find a type, use the default query_result
@@ -212,7 +225,7 @@ define query => type {
         handle => { inline_scopePop }
         
         // For the current result set, loop through the returned rows
-        //loop(.query->dsinfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)) => {
+        //loop(.query->dsInfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)) => {
         // loop currently breaks iterate (it's a bug)
         // (I've also found this to be faster than even a plain capture block with currentCapture->restart)
         local(i) = .size
