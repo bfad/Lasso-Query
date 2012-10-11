@@ -58,10 +58,10 @@ MODULE_DLL_FLAGS = $(MDEBUG_FLAGS) -dll -n -obj
 MODULE_LASSOAPP_FLAGS = $(MDEBUG_FLAGS) -dll -n -obj -lassoapp
 MODULE_APP_FLAGS = $(MDEBUG_FLAGS) -app -n -obj
 
-DLL_FINALE_NAME = $(LINK_DST)/$(basename $@)$(DLL_EXT)
-BC_FINALE_NAME = $(LINK_DST)/$(basename $@)$(BC_EXT)
-LASSOAPP_FINALE_NAME = $(LASSOAPP_DST)/$(basename $@)$(LASSOAPP_EXT)
-EXE_FINAL_NAME = $(EXE_DST)/$(basename $@)
+DLL_FINALE_NAME = $(LINK_DST)/$(PROJECT)$(DLL_EXT)
+BC_FINALE_NAME = $(LINK_DST)/$(PROJECT)$(BC_EXT)
+LASSOAPP_FINALE_NAME = $(LASSOAPP_DST)/$(PROJECT)$(LASSOAPP_EXT)
+EXE_FINAL_NAME = $(EXE_DST)/$(PROJECT)
 
 COMPAT_DEPS_LIST = compat/compat.bytes compat/compat.compare \
 					compat/compat.database compat/compat.date \
