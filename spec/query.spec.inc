@@ -33,6 +33,12 @@ describe("This test file") => {
 fail_if(not $has_connection, "Can not connect to the database")
 
 describe(::query) => {
+    it("correctly alerts you to SQL errors") => {
+        expect->error(1064, `You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECTD 'a'' at line 1`) => {
+            query(-host=#conn, -sql="SELECTD 'a'")->run
+        }
+    }
+    
     it("shares the connection when declared and executed inside an inline") => {
         local(conn_id, inline_conn_id)
         inline(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id") => {

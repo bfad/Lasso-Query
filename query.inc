@@ -90,11 +90,13 @@ define query => type {
         .query->capi and .query->dsInfo->action == lcapi_datasourcePrepareSQL ?
             handle => { .query->closePrepared }
 
-
+        local(code, msg)
         protect => {
             handle_error => {
+                #code = error_code
+                #msg  = error_msg
     		    var(__app_profiler__)?
-    			    $__app_profiler__->inlineEnd
+                    $__app_profiler__->inlineEnd
             }
             var(__app_profiler__)?
 			    $__app_profiler__->inlineBegin(.dsInfo)
@@ -104,6 +106,10 @@ define query => type {
             var(__app_profiler__)?
 			    $__app_profiler__->inlineEnd
         }
+		void != #code?
+			error_code = #code
+        void != #msg?
+			error_msg = #msg
         
         .'data_loaded' = true
         not .set? .set = 1
