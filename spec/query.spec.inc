@@ -15,7 +15,7 @@ local(conn) = array(
       -username='root', 
       -password=''
 )
-
+var(has_connection) = false
 describe("This test file") => {
     it("connects to specified MySQL server") => {
         local(conn_id)
@@ -24,12 +24,14 @@ describe("This test file") => {
             inline(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id") => {
                 #conn_id = field('con_id')
             }
+            $has_connection = (error_code == error_code_noerror)
         }
         expect(error_code_noerror, error_code)
         expect(boolean(#conn_id->isA(::integer)))
     }
 }
-if(error_code == error_code_noerror) => {
+fail_if(not $has_connection, "Can not connect to the database")
+
 describe(::query) => {
     it("shares the connection when declared and executed inside an inline") => {
         local(conn_id, inline_conn_id)
@@ -208,5 +210,4 @@ describe(::query) => {
             expect('d', #result->get(2)->find('second'))
         }
     }
-}
 }
