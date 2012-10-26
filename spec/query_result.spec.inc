@@ -55,20 +55,20 @@ describe(::query_result) => {
         }
         
         it("updates the value for the specified argument on assignment") => {
-            $qr->c('third') = 'theta'
+            $qr->c('third') = 'alpha'
             
             expect($qr->c('first') , $values->find('first'))
             expect($qr->c('second'), $values->find('second'))
-            expect($qr->c('third') , 'theta')
+            expect($qr->c('third') , 'alpha')
         }
     }
     
     describe("'c' method without arguments") => {
         it("returns the value for c in the map") => {
-            $qr = query_result((:'c'), (:'rhino'))
+            local(result) = query_result((:'c'), (:'rhino'))
             
-            expect($qr->c  , 'rhino')
-            expect($qr->c(), 'rhino')
+            expect(#result->c  , 'rhino')
+            expect(#result->c(), 'rhino')
         }
         
         it("fails with a 'method not found' error if c is not in the map") => {
@@ -81,15 +81,15 @@ describe(::query_result) => {
         }
         
         it("updates the value for c on assignment") => {
-            $qr = query_result((:'c'), (:'rhino'))
+            local(result) = query_result((:'c'), (:'rhino'))
             
-            $qr->c = 'theta'
-            expect($qr->c  , 'theta')
-            expect($qr->c(), 'theta')
+            #result->c = 'beta'
+            expect(#result->c  , 'beta')
+            expect(#result->c(), 'beta')
             
-            $qr->c() = 'gamma'
-            expect($qr->c  , 'gamma')
-            expect($qr->c(), 'gamma')
+            #result->c() = 'gamma'
+            expect(#result->c  , 'gamma')
+            expect(#result->c(), 'gamma')
         }
     }
     
@@ -114,11 +114,11 @@ describe(::query_result) => {
         }
         
         it("updates the value for the specified argument on assignment") => {
-            $qr->invoke('third') = 'theta'
+            $qr->invoke('third') = 'delta'
             
             expect($qr->invoke('first') , $values->find('first'))
             expect($qr->invoke('second'), $values->find('second'))
-            expect($qr->invoke('third') , 'theta')
+            expect($qr->invoke('third') , 'delta')
             
             $qr('third') = 'centauri'
             
@@ -130,11 +130,11 @@ describe(::query_result) => {
     
     describe("'invoke' special method without arguments") => {
         it("returns the value for invoke in the map") => {
-            $qr = query_result((:'invoke'), (:'rhino'))
+            local(result) = query_result((:'invoke'), (:'rhino'))
             
-            expect($qr->invoke  , 'rhino')
-            expect($qr->invoke(), 'rhino')
-            expect($qr()        , 'rhino')
+            expect(#result->invoke  , 'rhino')
+            expect(#result->invoke(), 'rhino')
+            expect(#result()        , 'rhino')
         }
         
         it("fails with a 'method not found' error if invoke is not in the map") => {
@@ -150,22 +150,67 @@ describe(::query_result) => {
         }
         
         it("updates the value for invoke on assignment") => {
-            $qr = query_result((:'invoke'), (:'rhino'))
+            local(result) = query_result((:'invoke'), (:'rhino'))
             
-            $qr->invoke = 'theta'
-            expect($qr->invoke  , 'theta')
-            expect($qr->invoke(), 'theta')
-            expect($qr()        , 'theta')
+            #result->invoke = 'sigma'
+            expect(#result->invoke  , 'sigma')
+            expect(#result->invoke(), 'sigma')
+            expect(#result()        , 'sigma')
             
-            $qr->invoke() = 'gamma'
-            expect($qr->invoke  , 'gamma')
-            expect($qr->invoke(), 'gamma')
-            expect($qr()        , 'gamma')
+            #result->invoke() = 'mu'
+            expect(#result->invoke  , 'mu')
+            expect(#result->invoke(), 'mu')
+            expect(#result()        , 'mu')
             
-            $qr() = 'eta'
-            expect($qr->invoke  , 'eta')
-            expect($qr->invoke(), 'eta')
-            expect($qr()        , 'eta')
+            #result() = 'eta'
+            expect(#result->invoke  , 'eta')
+            expect(#result->invoke(), 'eta')
+            expect(#result()        , 'eta')
+        }
+    }
+    
+    describe("'colPosition' method with arguments") => {
+        it("returns the first position in the array for the specified column name") => {
+            local(result) = query_result((:'one', 'two', 'two'), (:'foo', 'bar', 'baz'))
+            
+            expect(#result->colPosition('one'), 1)
+            expect(#result->colPosition('two'), 2)
+        }
+        
+        it("fails with a 'method not found' error if the specified column name is not in the map") => {
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr->colPosition('two')
+            }
+        }
+    }
+    
+    describe("'colPosition' method without arguments") => {
+        it("returns the value for colPosition in the map") => {
+            local(result) = query_result((:'colPosition'), (:'rhino'))
+            
+            expect(#result->colPosition  , 'rhino')
+            expect(#result->colPosition(), 'rhino')
+        }
+        
+        it("fails with a 'method not found' error if colPosition is not in the map") => {
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr->colPosition
+            }
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr->colPosition()
+            }
+        }
+        
+        it("updates the value for colPosition on assignment") => {
+            local(result) = query_result((:'colPosition'), (:'rhino'))
+            
+            #result->colPosition = 'phi'
+            expect(#result->colPosition  , 'phi')
+            expect(#result->colPosition(), 'phi')
+            
+            #result->colPosition() = 'nu'
+            expect(#result->colPosition  , 'nu')
+            expect(#result->colPosition(), 'nu')
         }
     }
 }

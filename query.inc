@@ -13,6 +13,14 @@ define trait_query_result => trait {
     require __cols::trait_positionallyKeyed
     require __data::trait_positionallyKeyed
     
+    provide colPosition(col::string) => {
+        fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
+        
+        return .__cols->findFirst(#col)
+    }
+    provide colPosition() => .c('colPosition')
+    provide colPosition=(rhs) => {.c('colPosition') = #rhs}
+    
     provide _unknowntag() => { return .c(method_name->asString) }
     provide _unknowntag(rhs) => {
         local(method_name) = method_name->asString
