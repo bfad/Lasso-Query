@@ -236,14 +236,15 @@ define query => type {
         .loadData
         
         local(currSet) = .query->getset(.set)
-        local(scope)   = map(
-                ::currentinline=.source,
-                   ::currentset=#currSet?#currSet|(:(:), (:), 0)
-        )
-        inline_scopePush(#scope)
-        //.source->named?
-        //  inline_namedPut(.source->named, #scope)
-        handle => { inline_scopePop }
+        // Don't seem to need this code
+        // local(scope)   = map(
+        //         ::currentinline=.source,
+        //            ::currentset=#currSet?#currSet|(:(:), (:), 0)
+        // )
+        // inline_scopePush(#scope)
+        // //.source->named?
+        // //  inline_namedPut(.source->named, #scope)
+        // handle => { inline_scopePop }
         
         // For the current result set, loop through the returned rows
         //loop(.query->dsInfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)) => {

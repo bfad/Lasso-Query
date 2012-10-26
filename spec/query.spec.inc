@@ -82,7 +82,7 @@ describe(::query) => {
     it("shares the connection when declared and executed inside another [query]") => {
         local(conn_id, outer_conn_id)
         query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id") => {
-            #outer_conn_id = field('con_id')
+            #outer_conn_id = #1->con_id
             query(-sql="SELECT CONNECTION_ID() AS con_id")->forEach => {
                 #conn_id = #1->con_id
             }
@@ -96,7 +96,7 @@ describe(::query) => {
         local(query) = query(-sql="SELECT CONNECTION_ID() AS con_id")
         
         query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id") => {
-            #outer_conn_id = field('con_id')
+            #outer_conn_id = #1->con_id
             #query->forEach => {
                 #conn_id = #1->con_id
             }
@@ -109,7 +109,7 @@ describe(::query) => {
         local(conn_id, outer_conn_id)
         
         query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id") => {
-            #outer_conn_id = field('con_id')
+            #outer_conn_id = #1->con_id
             local(query)    = query(-sql="SELECT CONNECTION_ID() AS con_id")
         }
         
