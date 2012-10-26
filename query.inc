@@ -13,6 +13,7 @@ define trait_query_result => trait {
     require __cols::trait_positionallyKeyed
     require __data::trait_positionallyKeyed
     
+    // While overriding colPosition() is fine, do not override colPosition(::string)
     provide colPosition(col::string) => {
         fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
         
@@ -31,12 +32,10 @@ define trait_query_result => trait {
     }
     
     provide c(col::string) => {
-        fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
-        return .__data->get(.__cols->findFirst(#col))
+        return .__data->get(.colPosition(#col))
     }
     provide c=(rhs, col::string) => {
-        fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
-        .__data->get(.__cols->findFirst(#col)) = #rhs
+        .__data->get(.colPosition(#col)) = #rhs
     }
     provide c() => .c('c')
     provide c=(rhs::string) => { .c('c') = #rhs }
