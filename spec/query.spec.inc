@@ -1,13 +1,11 @@
-if(not var(__loaded_query)) => {
-    // This should let us run this anywhere and still properly import the file
-    local(path_here) = io_file_getcwd + '/' + {}->callsite_file->stripLastComponent
-    not #path_here->endsWith('/') ? #path_here += '/'
-    local(f) = file(#path_here + '../query.inc')
-    sourcefile(#f->readString, #f->path, false, false)->invoke
-    var(__loaded_query) = true
-}
+local(path_here) = currentCapture->callsite_file->stripLastComponent
+not #path_here->beginsWith('/')
+    ? #path_here = io_file_getcwd + '/' + #path_here
+not #path_here->endsWith('/')
+    ? #path_here->append('/')
+sourcefile(file(#path_here + 'spec_helper.inc'), -autoCollect=false)->invoke
 
-lcapi_loadModule(sys_userCapiModulePath + 'MySQLConnector.dylib')
+
 local(conn) = array(
     -datasource='mysqlds', 
           -name='localhost', 
