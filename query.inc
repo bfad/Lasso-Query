@@ -15,9 +15,10 @@ define trait_query_result => trait {
     
     // While overriding colPosition() is fine, do not override colPosition(::string)
     provide colPosition(col::string) => {
-        fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
+        local(position) = .__cols->findFirst(#col)
+        fail_if(void == #position, error_code_methodNotFound, error_msg_methodNotFound)
         
-        return .__cols->findFirst(#col)
+        return #position
     }
     provide colPosition() => .c('colPosition')
     provide colPosition=(rhs) => {.c('colPosition') = #rhs}
