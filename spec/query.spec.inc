@@ -194,15 +194,6 @@ describe(::query) => {
         expect(2, #query->numSets)
     }
     
-    it("returns the value set by the -keyField parameter when [query->keyName] is called and the parameter is set") => {
-        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id", -keyField='con_id')
-        expect('con_id', #query->keyName)
-    }
-    it("returns '_RECID_' when [query->keyName] is called and -keyfield parameter is unset") => {
-        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
-        expect('_RECID_', #query->keyName)
-    }
-    
     describe("Method rowsArrayMap") => {
         it("returns an array, each element of which is a map with the column names as keys and values as the data for that row") => {
             local(query)  = query(-host=#conn, -sql="SELECT 'a' AS first, 'b' AS second UNION ALL SELECT 'c' AS first, 'd' AS second")

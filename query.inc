@@ -64,46 +64,16 @@ define query_result => type {
     }
 }
 
-if(not lasso_tagExists(::inline_type)) => {inline_type}
+protect => {\inline_type}
 define inline_type->accessDoClose => .doClose
+define query_inline_source => type {parent inline_type
+    public getData(...) => {
+        ..reset(:#rest)
 
-define query => type {
-    trait { import trait_queriable, trait_positionallyKeyed }
-    
-    data
-        private query,
-        private query_params,
-        private data_loaded = false,
-        private result_type,
-        private set_cols,
-        public  set
-    // Public Getters
-    public data_loaded => .'data_loaded',
-           result_type => .'result_type'
-
-
-    public onCreate(result_type::trait_array, ...) => {
-        .result_type = #result_type
-        .onCreate((:#rest))
-    }
-    public onCreate(result_type::string, ...) => {
-        .result_type  = (:#result_type)
-        .onCreate((:#rest))
-    }
-    public onCreate(...) => {
-        .query_params = #rest
-    }
-
-    
-    protected loadData => {
-        .data_loaded? return
-        
-        .query = inline_type(:.query_params)
-
-        .query->capi and .query->accessDoClose?
-            handle => { .query->close }
-        .query->capi and .query->dsInfo->action == lcapi_datasourcePrepareSQL ?
-            handle => { .query->closePrepared }
+        ..capi and ..accessDoClose?
+            handle => { ..close }
+        ..capi and ..dsInfo->action == lcapi_datasourcePrepareSQL ?
+            handle => { ..closePrepared }
 
         local(code, msg)
         protect => {
@@ -116,7 +86,7 @@ define query => type {
             var(__app_profiler__)?
 			    $__app_profiler__->inlineBegin(.dsInfo)
             
-            .query->capi->invoke(.query->dsInfo)
+            ..capi->invoke(..dsInfo)
 
             var(__app_profiler__)?
 			    $__app_profiler__->inlineEnd
@@ -125,6 +95,45 @@ define query => type {
 			error_code = #code
         void != #msg?
 			error_msg = #msg
+        
+        return ..dsInfo
+    }
+}
+
+define query => type {
+    trait { import trait_queriable, trait_positionallyKeyed }
+    
+    data
+        private query,
+        private query_params,
+        private source,
+        private data_loaded = false,
+        private result_type,
+        private set_cols,
+        public  set
+    // Public Getters
+    public data_loaded => .'data_loaded',
+           result_type => .'result_type'
+
+
+    public onCreate(result_type::trait_array, ...) => {
+        .'result_type' = #result_type
+        .onCreate((:#rest))
+    }
+    public onCreate(result_type::string, ...) => {
+        .'result_type'  = (:#result_type)
+        .onCreate((:#rest))
+    }
+    public onCreate(...) => {
+        .'query_params' = #rest
+        .'source' = query_inline_source
+    }
+
+    
+    protected loadData => {
+        .data_loaded? return
+        
+        .'query' = .source->getData(:.query_params)
         
         .'data_loaded' = true
         not .set? .set = 1
@@ -138,7 +147,7 @@ define query => type {
         .'set_cols'->get(#set)? return
         
         .'set_cols'->get(#set) = (
-            with col in .query->dsInfo->getSet(#set)->get(INLINE_COLUMNINFO_POS)
+            with col in .query->getSet(#set)->get(INLINE_COLUMNINFO_POS)
             select #col->get(INLINE_COLINFO_NAME_POS)
         )->asStaticarray
     }
@@ -153,13 +162,13 @@ define query => type {
     public numSets::integer => {
         .loadData
         
-        return .query->dsInfo->numSets
+        return .query->numSets
     }
 
     public size::integer => {
         .loadData
 
-        return .query->dsInfo->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
+        return .query->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
     }
     public foundCount::integer => .size
     
@@ -172,19 +181,10 @@ define query => type {
     }
     public columnNames::staticarray => .fieldNames
     
-    public keyName => {
-        // code adapted from keyColumn_name
-        .loadData
-    	local(key_name) = .query->'workingkeyfield_name'
-        
-        #key_name-> size == 0 ? 
-            return '_RECID_'
-    	return #key_name
-    }
     public keyValue => {
         // code from keyColumn_value
         .loadData
-        return .query->dsInfo->forcedRowID
+        return .query->forcedRowID
     }
 
     public keys::staticarray => {
@@ -198,7 +198,7 @@ define query => type {
         .loadSetCol
         
         local(
-            rows    = .query->dsInfo->getSet(.set)->get(INLINE_RESULTROWS_POS),
+            rows    = .query->getSet(.set)->get(INLINE_RESULTROWS_POS),
             cols    = .'set_cols'->get(.set),
             output  = array,
             col_map = map,
@@ -221,7 +221,7 @@ define query => type {
         .loadData
         .loadSetCol
 
-        local(row)  = .query->dsInfo->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
+        local(row)  = .query->getSet(.set)->get(INLINE_RESULTROWS_POS)->get(#key)
         local(cols) = .'set_cols'->get(.set)
         
         // If we can't find a type, use the default query_result
@@ -235,14 +235,14 @@ define query => type {
     public forEach => {
         .loadData
         
-        local(currSet) = .query->dsInfo->getset(.set)
+        local(currSet) = .query->getset(.set)
         local(scope)   = map(
-                ::currentinline=.query,
+                ::currentinline=.source,
                    ::currentset=#currSet?#currSet|(:(:), (:), 0)
         )
         inline_scopePush(#scope)
-        //.query->named?
-        //  inline_namedPut(.query->named, #scope)
+        //.source->named?
+        //  inline_namedPut(.source->named, #scope)
         handle => { inline_scopePop }
         
         // For the current result set, loop through the returned rows
