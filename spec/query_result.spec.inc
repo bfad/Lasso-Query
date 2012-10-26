@@ -92,4 +92,80 @@ describe(::query_result) => {
             expect($qr->c(), 'gamma')
         }
     }
+    
+    describe("'invoke' special method with arguments") => {
+        it("returns the value for the argument it's passed") => {
+            expect($qr->invoke('first') , $values->find('first'))
+            expect($qr->invoke('second'), $values->find('second'))
+            expect($qr->invoke('third') , $values->find('third'))
+            
+            expect($qr('first') , $values->find('first'))
+            expect($qr('second'), $values->find('second'))
+            expect($qr('third') , $values->find('third'))
+        }
+        
+        it("fails with a 'method not found' error if the argument is not in the map") => {
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr->invoke('two')
+            }
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr('two')
+            }
+        }
+        
+        it("updates the value for the specified argument on assignment") => {
+            $qr->invoke('third') = 'theta'
+            
+            expect($qr->invoke('first') , $values->find('first'))
+            expect($qr->invoke('second'), $values->find('second'))
+            expect($qr->invoke('third') , 'theta')
+            
+            $qr('third') = 'centauri'
+            
+            expect($qr('first') , $values->find('first'))
+            expect($qr('second'), $values->find('second'))
+            expect($qr('third') , 'centauri')
+        }
+    }
+    
+    describe("'invoke' special method without arguments") => {
+        it("returns the value for invoke in the map") => {
+            $qr = query_result((:'invoke'), (:'rhino'))
+            
+            expect($qr->invoke  , 'rhino')
+            expect($qr->invoke(), 'rhino')
+            expect($qr()        , 'rhino')
+        }
+        
+        it("fails with a 'method not found' error if invoke is not in the map") => {
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr->invoke
+            }
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr->invoke()
+            }
+            expect->error(error_code_methodNotFound, error_msg_methodNotFound) => { 
+                $qr()
+            }
+        }
+        
+        it("updates the value for invoke on assignment") => {
+            $qr = query_result((:'invoke'), (:'rhino'))
+            
+            $qr->invoke = 'theta'
+            expect($qr->invoke  , 'theta')
+            expect($qr->invoke(), 'theta')
+            expect($qr()        , 'theta')
+            
+            $qr->invoke() = 'gamma'
+            expect($qr->invoke  , 'gamma')
+            expect($qr->invoke(), 'gamma')
+            expect($qr()        , 'gamma')
+            
+            $qr() = 'eta'
+            expect($qr->invoke  , 'eta')
+            expect($qr->invoke(), 'eta')
+            expect($qr()        , 'eta')
+        }
+    }
 }

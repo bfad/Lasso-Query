@@ -21,6 +21,7 @@ define trait_query_result => trait {
         
         .c(#method_name) = #rhs
     }
+    
     provide c(col::string) => {
         fail_if(not .__cols->contains(#col), error_code_methodNotFound, error_msg_methodNotFound)
         return .__data->get(.__cols->findFirst(#col))
@@ -31,6 +32,12 @@ define trait_query_result => trait {
     }
     provide c() => .c('c')
     provide c=(rhs::string) => { .c('c') = #rhs }
+    
+    // A bit of syntactic sugar that allows for #row('foo') instead of #row->c('foo')
+    provide invoke(col::string) => .c(#col)
+    provide invoke=(rhs, col::string) => { .c(#col) = #rhs }
+    provide invoke() => .c('invoke')
+    provide invoke=(rhs::string) => { .c('invoke') = #rhs }
     
     provide +(s::string) => {
         return .asString + #s
