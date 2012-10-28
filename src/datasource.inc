@@ -20,6 +20,10 @@ define ds_connect => type {
         .capi = \(#ds_type)
     }
     
+    public saveConnection(connection::dsInfo) => {
+        .'dsInfo' = #connection
+    }
+    
     public getData(sql::string)::dsInfo => {
         local(ds_data) = .dsInfo->makeInheritedCopy
         
@@ -27,6 +31,9 @@ define ds_connect => type {
         #ds_data->action       = lcapi_datasourceExecSQL
         
         .capi->invoke(#ds_data)
+        
+        not .dsInfo->connection
+            ? .saveConnection(#ds_data->makeInheritedCopy)
         
         return #ds_data
     }
