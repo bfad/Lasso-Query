@@ -8,7 +8,7 @@ sourcefile(file(#path_here + 'spec_helper.inc'), -autoCollect=false)->invoke
 
 describe(::ds_connect) => {
     it('connects to the specified MySQL server') => {
-        local(conn) = ds_connect('mysqlds', -host='localhost', -port=3306, -username='root', -password='')
+        local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
         handle => { #conn->close }
         
         local(conn_id) = #conn->getData("SELECT CONNECTION_ID() AS con_id")
@@ -18,7 +18,7 @@ describe(::ds_connect) => {
     }
     
     it('works with the query object to retrieve data') => {
-        local(conn) = ds_connect('mysqlds', -host='localhost', -port=3306, -username='root', -password='')
+        local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
         handle => { #conn->close }
         
         local(conn_id) = query(#conn, "SELECT CONNECTION_ID() AS con_id")->first->con_id
@@ -26,7 +26,7 @@ describe(::ds_connect) => {
     }
     
     it('allows multiple query objects to use the same connection') => {
-        local(conn) = ds_connect('mysqlds', -host='localhost', -port=3306, -username='root', -password='')
+        local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
         handle => { #conn->close }
         
         local(conn_id1) = query(#conn, "SELECT CONNECTION_ID() AS con_id")->first->con_id
@@ -38,7 +38,7 @@ describe(::ds_connect) => {
     }
     
     it('allows multiple query objects to share the connection without overwriting data') => {
-        local(conn) = ds_connect('mysqlds', -host='localhost', -port=3306, -username='root', -password='')
+        local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
         handle => { #conn->close }
         
         local(query1) = query(#conn, "SELECT CONNECTION_ID() AS con_id")
@@ -48,4 +48,8 @@ describe(::ds_connect) => {
         expect(2, #query2->numSets)
         expect(#query1->first->con_id, #query2->set(2)->first->con_id)
     }
+    
+    // Need tests for database_registry lookup
+    // (Problem is how to set it up, especially since it's instance based)
+    // (Do we assume global_command_line home or home home, etc?)
 }
