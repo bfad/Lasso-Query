@@ -1,3 +1,43 @@
+define ds_connect => type {
+    data
+        protected dsInfo,
+        protected capi
+    
+    public dsInfo => .'dsInfo',
+           capi   => .'capi'
+    
+    public onCreate(ds_type::string, -host::string, -port::integer=0, -username::string='', -password::string='', -schema::string='', -encoding::string='UTF-8') => {
+        .dsInfo = dsInfo
+        .dsInfo->hostDatasource    = #ds_type
+        .dsInfo->hostName          = #host
+        .dsInfo->hostPort          = #port->asString
+        .dsInfo->hostUsername      = #username
+        .dsInfo->hostPassword      = #password
+        .dsInfo->hostSchema        = #schema
+        .dsInfo->hostTableEncoding = #encoding
+        .dsInfo->maxRows           = -1
+        
+        .capi = \(#ds_type)
+    }
+    
+    public getData(sql::string)::dsInfo => {
+        local(ds_data) = .dsInfo->makeInheritedCopy
+        
+        #ds_data->statement    = #sql
+        #ds_data->action       = lcapi_datasourceExecSQL
+        
+        .capi->invoke(#ds_data)
+        
+        return #ds_data
+    }
+    
+    public close => {
+        .dsInfo->action = lcapi_datasourceCloseConnection
+		.capi->invoke(.dsInfo)
+    }
+}
+
+
 protect => {\inline_type}
 define inline_type->accessDoClose => .doClose
 define query_inline_source => type {parent inline_type
