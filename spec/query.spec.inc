@@ -157,6 +157,12 @@ describe(::query) => {
             expect('foo', #row->con_id)
         }
     }
+    
+    it("allows for using classic lasso inline syntax") => {
+        local(query) = query(-host=#conn, -database='information_schema', -table='CHARACTER_SETS', -search, -operator='bw', 'CHARACTER_SET_NAME'='l')
+        
+        expect(#query->size > 0)
+    }
 
     it("implements first method") => {
         local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id, 'foo' AS con_id")
