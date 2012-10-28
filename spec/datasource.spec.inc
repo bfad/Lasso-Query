@@ -16,4 +16,12 @@ describe(::ds_connect) => {
         
         expect(boolean(#conn_id->isA(::integer)))
     }
+    
+    it('works with the query object to retrieve data') => {
+        local(conn) = ds_connect('mysqlds', -host='localhost', -port=3306, -username='root', -password='')
+        handle => { #conn->close }
+        
+        local(conn_id) = query(#conn, "SELECT CONNECTION_ID() AS con_id")->first->con_id
+        expect(boolean(#conn_id->isA(::integer)))
+    }
 }

@@ -14,6 +14,10 @@ define query => type {
            result_type => .'result_type'
 
 
+   public onCreate(datasource::ds_connect, sql::string) => {
+       .'source'       = #datasource
+       .'query_params' = #sql
+   }
     public onCreate(result_type::trait_array, ...) => {
         .'result_type' = #result_type
         .onCreate((:#rest))
@@ -31,7 +35,7 @@ define query => type {
     protected loadData => {
         .data_loaded? return
         
-        .'query' = .source->getData(:.query_params)
+        .'query' = .source->getData(.query_params)
         
         .'data_loaded' = true
         not .set? .set = 1
