@@ -14,10 +14,14 @@ define query => type {
            result_type => .'result_type'
 
 
-   public onCreate(datasource::ds_connect, sql::string) => {
-       .'source'       = #datasource
-       .'query_params' = #sql
-   }
+    public onCreate(datasource::ds_connect, sql::string) => {
+        .'source'       = #datasource
+        .'query_params' = #sql
+    }
+    public onCreate(datasource::ds_database, sql::string) => {
+        .'source'       = #datasource
+        .'query_params' = #sql
+    }
     public onCreate(result_type::trait_array, ...) => {
         .'result_type' = #result_type
         .onCreate((:#rest))

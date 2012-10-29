@@ -85,6 +85,22 @@ define ds_connect => type {
     }
 }
 
+define ds_database => type { 
+    data
+        private connection::ds_connect,
+        private database
+    
+    public connection => .'connection',
+           database   => .'database'
+        
+    public onCreate(connection::ds_connect, database::string) => {
+        .'connection' = #connection
+        .'database'   = #database
+    }
+    
+    public getData(sql::string)::dsInfo => .connection->getData(.database, #sql)
+}
+
 
 protect => {\inline_type}
 define inline_type->accessDoClose => .doClose

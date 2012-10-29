@@ -62,3 +62,22 @@ describe(::ds_connect) => {
         expect(#num_rows > 0)
     }
 }
+
+describe(::ds_database) => {
+    it('runs a query in the context of a specified ds_connection and database') => {
+        local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
+        handle => { #conn->close }
+        
+        local(num_rows) = ds_database(#conn, 'information_schema')->getData("SELECT * FROM CHARACTER_SETS")
+            ->getSet(1)->get(INLINE_RESULTROWS_POS)->size
+        expect(#num_rows > 0)
+    }
+    
+    it('works with the query object to retrieve data') => {
+        local(db) = ds_database(ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password=''), 'information_schema')
+        handle => { #conn->close }
+        
+        local(num_rows) = query(#db, "SELECT * FROM CHARACTER_SETS")->size
+        expect(#num_rows > 0)
+    }
+}
