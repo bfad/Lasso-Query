@@ -71,6 +71,13 @@ define ds_connect => type {
         
         return #ds_data
     }
+    public getData(database::string, sql::string)::dsInfo => {
+        .dsInfo->databaseName = #database
+        local(ret) = .getData(#sql)
+        .dsInfo->databaseName = ''
+        
+        return #ret
+    }
     
     public close => {
         .dsInfo->action = lcapi_datasourceCloseConnection

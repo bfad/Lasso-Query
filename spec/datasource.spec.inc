@@ -52,4 +52,13 @@ describe(::ds_connect) => {
     // Need tests for database_registry lookup
     // (Problem is how to set it up, especially since it's instance based)
     // (Do we assume global_command_line home or home home, etc?)
+    
+    it('runs a query in the context of a specified database') => {
+        local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
+        handle => { #conn->close }
+        
+        local(num_rows) = #conn->getData('information_schema', "SELECT * FROM CHARACTER_SETS")
+            ->getSet(1)->get(INLINE_RESULTROWS_POS)->size
+        expect(#num_rows > 0)
+    }
 }
