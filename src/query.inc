@@ -18,11 +18,27 @@ define query => type {
         .'source'       = #datasource
         .'query_params' = #sql
     }
+    public onCreate(result_type::string, datasource::ds_connect, sql::string) => {
+        .'result_type' = (:#result_type)
+        .onCreate(#datasource, #sql)
+    }
+    public onCreate(result_type::trait_positionallyKeyed, datasource::ds_connect, sql::string) => {
+        .'result_type' = #result_type
+        .onCreate(#datasource, #sql)
+    }
     public onCreate(datasource::ds_database, sql::string) => {
         .'source'       = #datasource
         .'query_params' = #sql
     }
-    public onCreate(result_type::trait_array, ...) => {
+    public onCreate(result_type::string, datasource::ds_database, sql::string) => {
+        .'result_type' = (:#result_type)
+        .onCreate(#datasource, #sql)
+    }
+    public onCreate(result_type::trait_positionallyKeyed, datasource::ds_database, sql::string) => {
+        .'result_type' = #result_type
+        .onCreate(#datasource, #sql)
+    }
+    public onCreate(result_type::trait_positionallyKeyed, ...) => {
         .'result_type' = #result_type
         .onCreate((:#rest))
     }

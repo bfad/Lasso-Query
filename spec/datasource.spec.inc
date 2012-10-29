@@ -6,6 +6,9 @@ not #path_here->endsWith('/')
 sourcefile(file(#path_here + 'spec_helper.inc'), -autoCollect=false)->invoke
 
 
+var(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
+handle => { $conn->close }
+
 describe(::ds_connect) => {
     it('connects to the specified MySQL server') => {
         local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
@@ -61,23 +64,71 @@ describe(::ds_connect) => {
             ->getSet(1)->get(INLINE_RESULTROWS_POS)->size
         expect(#num_rows > 0)
     }
+    
+    it("each row of the first set is of type specified and following sets are the default") => {
+        local(query) = query('tmp_query_result1', 
+            $conn,
+            "SELECT * FROM information_schema.CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+        )
+        with row in #query do => {
+            expect('tmp_query_result1', #row->type)
+        }
+        with row in #query->set(2) do => {
+            expect('query_result', #row->type)
+        }
+    }
+    
+    it("each row of each set is of the types specified") => {
+        local(query) = query((:'tmp_query_result1', 'tmp_query_result2'), 
+            $conn,
+            "SELECT * FROM information_schema.CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+        )
+        with row in #query do => {
+            expect('tmp_query_result1', #row->type)
+        }
+        with row in #query->set(2) do => {
+            expect('tmp_query_result2', #row->type)
+        }
+    }
 }
 
 describe(::ds_database) => {
     it('runs a query in the context of a specified ds_connection and database') => {
-        local(conn) = ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password='')
-        handle => { #conn->close }
-        
-        local(num_rows) = ds_database(#conn, 'information_schema')->getData("SELECT * FROM CHARACTER_SETS")
+        local(num_rows) = ds_database($conn, 'information_schema')->getData("SELECT * FROM CHARACTER_SETS")
             ->getSet(1)->get(INLINE_RESULTROWS_POS)->size
         expect(#num_rows > 0)
     }
     
     it('works with the query object to retrieve data') => {
-        local(db) = ds_database(ds_connect('mysqlds', 'localhost', -port=3306, -username='root', -password=''), 'information_schema')
-        handle => { #conn->close }
+        local(db) = ds_database($conn, 'information_schema')
         
         local(num_rows) = query(#db, "SELECT * FROM CHARACTER_SETS")->size
         expect(#num_rows > 0)
+    }
+    
+    it("each row of the first set is of type specified and following sets are the default") => {
+        local(query) = query('tmp_query_result1', 
+            ds_database($conn, 'information_schema'),
+            "SELECT * FROM CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+        )
+        with row in #query do => {
+            expect('tmp_query_result1', #row->type)
+        }
+        with row in #query->set(2) do => {
+            expect('query_result', #row->type)
+        }
+    }
+    
+    it("each row of each set is of the types specified") => {
+        local(query) = query((:'tmp_query_result1', 'tmp_query_result2'), 
+            ds_database($conn, 'information_schema'),
+            "SELECT * FROM CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+        )
+        with row in #query do => {
+            expect('tmp_query_result1', #row->type)
+        }
+        with row in #query->set(2) do => {
+            expect('tmp_query_result2', #row->type)
+        }
     }
 }

@@ -132,20 +132,12 @@ describe(::query) => {
     }
     
     it("returns a [trait_queriable] whose each iteration is of type passed as first argument") => {
-        define tmp_query_result => type {
-            parent query_result
-            
-            public onCreate(p0,p1) => {
-                ..onCreate(#p0, #p1)
-            }
-        }
-        
-        local(query) = query('tmp_query_result', -host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
+        local(query) = query('tmp_query_result1', -host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
         
         expect(#query->isA(::trait_queriable) != 0)
 
         with row in #query do => {
-            expect(#row->type, 'tmp_query_result')
+            expect(#row->type, 'tmp_query_result1')
         }
     }
 

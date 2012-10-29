@@ -9,5 +9,20 @@ if(not var(__loaded_query)) => {
     
     lcapi_loadModule((sys_masterHomePath || sys_homePath || '/var/lasso/home') + '/LassoModules/MySQLConnector.' + sys_dll_ext)
     
+    define tmp_query_result1 => type {
+        parent query_result
+            
+        public onCreate(p0,p1) => {
+            ..onCreate(#p0, #p1)
+        }
+    }
+    define tmp_query_result2 => type {
+        parent query_result
+            
+        public onCreate(p0,p1) => {
+            ..onCreate(#p0, #p1)
+        }
+    }
+    
     var(__loaded_query) = true
 }
