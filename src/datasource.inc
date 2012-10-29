@@ -64,7 +64,26 @@ define ds_connect => type {
         #ds_data->statement    = #sql
         #ds_data->action       = lcapi_datasourceExecSQL
         
-        .capi->invoke(#ds_data)
+        local(code, msg)
+        protect => {
+            handle_error => {
+                #code = error_code
+                #msg  = error_msg
+    		    var(__app_profiler__)?
+                    $__app_profiler__->inlineEnd
+            }
+            var(__app_profiler__)?
+			    $__app_profiler__->inlineBegin(.dsInfo)
+            
+            .capi->invoke(#ds_data)
+            
+            var(__app_profiler__)?
+			    $__app_profiler__->inlineEnd
+        }
+		void != #code?
+			error_code = #code
+        void != #msg?
+			error_msg = #msg
         
         not .dsInfo->connection
             ? .saveConnection(#ds_data->makeInheritedCopy)
