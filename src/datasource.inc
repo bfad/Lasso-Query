@@ -38,14 +38,15 @@ define ds_connect => type {
     }
     
     public onCreate(hostname::string, -alias::string='', -schema::string='', -username::string='', -encoding::string='UTF-8') => {
-        local(host) = database_registry->getDatasourceHost(#hostname, -alias=#alias, -schema=#schema, -username=#username)
+        local(db_reg) = database_registry
+        local(host)   = #db_reg->getDatasourceHost(#hostname, -alias=#alias, -schema=#schema, -username=#username)
         
         fail_if(not #host, 'Could not find data source information for "' + #hostname + '"')
         
         #host->find('port') = integer(#host->find('port'))
             
-        return .onCreate(db_reg->getDatasource(#host->get('id_datasource')),
-                -host= #host->find('name')     || '',
+        return .onCreate(#db_reg->getDatasource(#host->get('id_datasource'))->get('name'),
+                       #host->find('name')     || '',
                 -port= #host->find('port')     || '',
             -username= #host->find('username') || '',
             -password= #host->find('password') || '',
