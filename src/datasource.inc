@@ -80,7 +80,7 @@ define ds_connect => type {
     }
     
     public query(sql::string)::query => query(self, #sql)
-    public query(result_type, sql::string)::query => query(#result_type, self, #sql)
+    public query(result_type, sql::string)::query => query(self, #result_type, #sql)
     
     public close => {
         .dsInfo->action = lcapi_datasourceCloseConnection
@@ -104,7 +104,7 @@ define ds_database => type {
     public getData(sql::string)::dsInfo => .connection->getData(.database, #sql)
     
     public query(sql::string)::query => query(self, #sql)
-    public query(result_type, sql::string)::query => query(#result_type, self, #sql)
+    public query(result_type, sql::string)::query => query(self, #result_type, #sql)
 }
 
 

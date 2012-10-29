@@ -18,11 +18,11 @@ define query => type {
         .'source'       = #datasource
         .'query_params' = #sql
     }
-    public onCreate(result_type::string, datasource::ds_connect, sql::string) => {
+    public onCreate(datasource::ds_connect, result_type::string, sql::string) => {
         .'result_type' = (:#result_type)
         .onCreate(#datasource, #sql)
     }
-    public onCreate(result_type::trait_positionallyKeyed, datasource::ds_connect, sql::string) => {
+    public onCreate(datasource::ds_connect, result_type::trait_positionallyKeyed, sql::string) => {
         .'result_type' = #result_type
         .onCreate(#datasource, #sql)
     }
@@ -30,21 +30,21 @@ define query => type {
         .'source'       = #datasource
         .'query_params' = #sql
     }
-    public onCreate(result_type::string, datasource::ds_database, sql::string) => {
+    public onCreate(datasource::ds_database, result_type::string, sql::string) => {
         .'result_type' = (:#result_type)
         .onCreate(#datasource, #sql)
     }
-    public onCreate(result_type::trait_positionallyKeyed, datasource::ds_database, sql::string) => {
+    public onCreate(datasource::ds_database, result_type::trait_positionallyKeyed, sql::string) => {
         .'result_type' = #result_type
         .onCreate(#datasource, #sql)
     }
     public onCreate(result_type::trait_positionallyKeyed, ...) => {
         .'result_type' = #result_type
-        .onCreate((:#rest))
+        .onCreate(:#rest)
     }
     public onCreate(result_type::string, ...) => {
         .'result_type'  = (:#result_type)
-        .onCreate((:#rest))
+        .onCreate(:#rest)
     }
     public onCreate(...) => {
         .'query_params' = #rest
