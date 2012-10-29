@@ -90,6 +90,40 @@ describe(::ds_connect) => {
             expect('tmp_query_result2', #row->type)
         }
     }
+    
+    describe('the query member method') => {
+        it('returns a query object to access data') => {
+            local(result) = $conn->query("SELECT * FROM information_schema.CHARACTER_SETS")
+            
+            expect(boolean(#result->isa(::query)))
+        }
+    
+        it("each row of the first set is of type specified and following sets are the default") => {
+            local(result) = $conn->query(
+                'tmp_query_result1', 
+                "SELECT * FROM information_schema.CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+            )
+            with row in #result do => {
+                expect('tmp_query_result1', #row->type)
+            }
+            with row in #result->set(2) do => {
+                expect('query_result', #row->type)
+            }
+        }
+    
+        it("each row of each set is of the types specified") => {
+            local(result) = $conn->query(
+                (:'tmp_query_result1', 'tmp_query_result2'), 
+                "SELECT * FROM information_schema.CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+            )
+            with row in #result do => {
+                expect('tmp_query_result1', #row->type)
+            }
+            with row in #result->set(2) do => {
+                expect('tmp_query_result2', #row->type)
+            }
+        }
+    }
 }
 
 describe(::ds_database) => {
@@ -129,6 +163,41 @@ describe(::ds_database) => {
         }
         with row in #query->set(2) do => {
             expect('tmp_query_result2', #row->type)
+        }
+    }
+    
+
+    describe('the query member method') => {
+        it('returns a query object to access data') => {
+            local(db)     = ds_database($conn, 'information_schema')        
+            local(result) = #db->query("SELECT * FROM CHARACTER_SETS")
+            
+            expect(boolean(#result->isa(::query)))
+        }
+    
+        it("each row of the first set is of type specified and following sets are the default") => {
+            local(result) = ds_database($conn, 'information_schema')->query('tmp_query_result1', 
+                "SELECT * FROM CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+            )
+            with row in #result do => {
+                expect('tmp_query_result1', #row->type)
+            }
+            with row in #result->set(2) do => {
+                expect('query_result', #row->type)
+            }
+        }
+    
+        it("each row of each set is of the types specified") => {
+            local(result) = ds_database($conn, 'information_schema')->query(
+                (:'tmp_query_result1', 'tmp_query_result2'), 
+                "SELECT * FROM CHARACTER_SETS;SELECT CONNECTION_ID() AS con_id;"
+            )
+            with row in #result do => {
+                expect('tmp_query_result1', #row->type)
+            }
+            with row in #result->set(2) do => {
+                expect('tmp_query_result2', #row->type)
+            }
         }
     }
 }
