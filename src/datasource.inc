@@ -16,6 +16,7 @@ define database_registry->getDatasourceHost(name::string, -port::string='', -ali
 }
 
 define ds_connect => type {
+    trait { import trait_close }
     data
         protected dsInfo,
         protected capi
