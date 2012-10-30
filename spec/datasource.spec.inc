@@ -124,6 +124,15 @@ describe(::ds_connect) => {
             }
         }
     }
+    
+    describe('the database member method') => {
+        it('takes a string specifying the database name and returns a ds_database object with itself as the connection') => {
+            local(db) = $conn->database('information_schema')
+            
+            expect(boolean(#db->isA(::ds_database)))
+            expect(#db->connection->sameAs($conn))
+        }
+    }
 }
 
 describe(::ds_database) => {

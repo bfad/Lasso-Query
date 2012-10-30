@@ -55,6 +55,8 @@ define ds_connect => type {
         )
     }
     
+    public database(db::string)::ds_database => ds_database(self, #db)
+    
     public saveConnection(connection::dsInfo) => {
         .'dsInfo' = #connection
     }

@@ -142,9 +142,11 @@ Here we will run through creating a ds\_connect object using information stored 
 This example will show you how to use \[ds\_database\] and how multiple \[ds\_database\] objects can share a single \[ds\_connect\] connection. Note that the connection to the database by a \[ds\_connect\] object is only opened lazily - only when a query is actually performed. However, form that point it stays open until explicitly closed (or the lasso process quits, forcing a close). So each of these queries is executed over the same connection.
 
     <?=
+        // The database method returns a ds_database object
+        // This is the preferred method of creating such an object
         local(conn) = ds_connect('localhost', -username='doc')
-        local(db1)  = ds_database(#conn, 'rhino')
-        local(db2)  = ds_database(#conn, 'information_schema')
+        local(db1)  = #conn->database('rhino')
+        local(db2)  = #conn->database('information_schema')
         
         handle => { #conn->close }
     ?>
@@ -189,7 +191,7 @@ Both [ds\_connect->query(...)] and [ds\_database->query(...)] can also take two 
         local(conn) = ds_connect('localhost', -username='doc')
         handle => { #conn->close }
         
-        local(people) = ds_database(#conn, 'rhino')->query('person',
+        local(people) = #conn->database('rhino')->query('person',
             "SELECT p.name_preferred, p.name_first, p.name_middle, p.name_last, p.email
              FROM people p WHERE p.name_last LIKE 'A%' LIMIT 100"
         )
