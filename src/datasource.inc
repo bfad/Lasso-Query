@@ -48,7 +48,7 @@ define ds_connect => type {
             
         return .onCreate(#db_reg->getDatasource(#host->get('id_datasource'))->get('name'),
                        #host->find('name')     || '',
-                -port= #host->find('port')     || '',
+                -port= #host->find('port'), // the default of zero taken care of in casting above
             -username= #host->find('username') || '',
             -password= #host->find('password') || '',
               -schema= #host->find('schema')   || '',
