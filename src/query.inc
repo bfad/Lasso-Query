@@ -123,7 +123,6 @@ define query => type {
             rows    = .query->getSet(.set)->get(INLINE_RESULTROWS_POS),
             cols    = .'set_cols'->get(.set),
             output  = array,
-            col_map = map,
             i       = 0
         )
         
@@ -134,6 +133,33 @@ define query => type {
                 #tmp->insert(#cols->get(loop_count) = #rows->get(#i)->get(loop_count))
             }
             #output->insert(#tmp)
+        }
+        
+    	return #output
+    }
+    public recordsMap(keyField::string='') => {
+        .loadData
+        .loadSetCol
+        
+        local(
+            rows    = .query->getSet(.set)->get(INLINE_RESULTROWS_POS),
+            cols    = .'set_cols'->get(.set),
+            output  = map,
+            i       = 0
+        )
+        #keyField == '' or #cols !>> #keyField
+            ? #keyField = 'id'
+        #cols !>> #keyField
+            ? #keyField = #cols->first
+        local(keyIndex) = #cols->findPosition(#keyField)->first
+        
+        while(#i < #rows->size) => {
+            #i++
+            local(tmp) = map
+            loop(#cols->size) => {
+                #tmp->insert(#cols->get(loop_count) = #rows->get(#i)->get(loop_count))
+            }
+            #output->insert(#rows->get(#i)->get(#keyIndex) = #tmp)
         }
         
     	return #output
