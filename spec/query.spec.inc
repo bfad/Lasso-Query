@@ -203,4 +203,20 @@ describe(::query) => {
             expect('d', #result->get(2)->find('second'))
         }
     }
+    
+    describe("-> dataRows") => {
+        it("returns a staticarray of staticarrays - each internal array being a row of data") => {
+            local(query)  = query(-host=#conn, -sql="SELECT 'a' AS first, 'b' AS second UNION ALL SELECT 'c', 'd'")
+            local(result) = #query->dataRows
+            
+            expect('staticarray', #result->type)
+            expect('staticarray', #result->get(1)->type)
+            expect('staticarray', #result->get(2)->type)
+            
+            expect('a', #result->get(1)->get(1))
+            expect('b', #result->get(1)->get(2))
+            expect('c', #result->get(2)->get(1))
+            expect('d', #result->get(2)->get(2))
+        }
+    }
 }

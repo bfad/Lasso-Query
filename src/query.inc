@@ -103,6 +103,13 @@ define query => type {
     }
     public columnNames::staticarray => .fieldNames
     
+    public dataRows::staticarray => {
+        .loadData
+        .loadSetCol
+        
+        return .query->getSet(.set)->get(INLINE_RESULTROWS_POS)
+    }
+    
     public keyValue => {
         // code from keyColumn_value
         .loadData
