@@ -60,6 +60,11 @@ define ds_connect => type {
     
     public saveConnection(connection::dsInfo) => {
         .'dsInfo' = #connection
+        
+        // When a command-line process finishes, the db connection should be closed
+        // This allows for the database connection to be closed at the end of a web request
+        not web_response->isA(::null)
+            ? define_atEnd({ self->close })
     }
     
     public getData(sql::string)::dsInfo => {
@@ -73,21 +78,21 @@ define ds_connect => type {
             handle_error => {
                 #code = error_code
                 #msg  = error_msg
-    		    var(__app_profiler__)?
+                var(__app_profiler__)?
                     $__app_profiler__->inlineEnd
             }
             var(__app_profiler__)?
-			    $__app_profiler__->inlineBegin(.dsInfo)
+                $__app_profiler__->inlineBegin(.dsInfo)
             
             .capi->invoke(#ds_data)
             
             var(__app_profiler__)?
-			    $__app_profiler__->inlineEnd
+                $__app_profiler__->inlineEnd
         }
-		void != #code?
-			error_code = #code
+        void != #code?
+            error_code = #code
         void != #msg?
-			error_msg = #msg
+            error_msg = #msg
         
         not .dsInfo->connection
             ? .saveConnection(#ds_data->makeInheritedCopy)
@@ -107,7 +112,7 @@ define ds_connect => type {
     
     public close => {
         .dsInfo->action = lcapi_datasourceCloseConnection
-		.capi->invoke(.dsInfo)
+        .capi->invoke(.dsInfo)
     }
 }
 
@@ -147,21 +152,21 @@ define query_inline_source => type {parent inline_type
             handle_error => {
                 #code = error_code
                 #msg  = error_msg
-    		    var(__app_profiler__)?
+                var(__app_profiler__)?
                     $__app_profiler__->inlineEnd
             }
             var(__app_profiler__)?
-			    $__app_profiler__->inlineBegin(.dsInfo)
+                $__app_profiler__->inlineBegin(.dsInfo)
             
             ..capi->invoke(..dsInfo)
 
             var(__app_profiler__)?
-			    $__app_profiler__->inlineEnd
+                $__app_profiler__->inlineEnd
         }
-		void != #code?
-			error_code = #code
+        void != #code?
+            error_code = #code
         void != #msg?
-			error_msg = #msg
+            error_msg = #msg
         
         return ..dsInfo
     }
