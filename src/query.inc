@@ -189,9 +189,11 @@ define query => type {
 
     public forEach => {
         .loadData
+        error_currentError != error_noError
+            ? return
         
-        local(currSet) = .query->getset(.set)
         // Don't seem to need this code
+        // local(currSet) = .query->getset(.set)
         // local(scope)   = map(
         //         ::currentinline=.source,
         //            ::currentset=#currSet?#currSet|(:(:), (:), 0)

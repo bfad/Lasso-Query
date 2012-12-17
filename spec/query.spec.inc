@@ -35,6 +35,9 @@ describe(::query) => {
         expect->error(1064, `You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECTD 'a'' at line 1`) => {
             query(-host=#conn, -sql="SELECTD 'a'")->run
         }
+        expect->error(1064, `You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECTD 'a'' at line 1`) => {
+            with row in query(-host=#conn, -sql="SELECTD 'a'") do {#row}
+        }
     }
     
     it("shares the connection when declared and executed inside an inline") => {
