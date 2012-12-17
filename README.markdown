@@ -9,24 +9,24 @@ Installation
 
 ### Pre-compiled Libraries
 
-1. Click the big "Downloads" button next to the description on this page.
+1. Click the "Downloads" menu option at the top of this page.
 2. Choose the proper download for your platform
 3. Decompress the file and move it into `$LASSO9_HOME/LassoLibraries/`
 
 ### Compile From Source
 
     $> cd where/you/want/the/source/installed/
-    $> git clone https://github.com/bfad/Lasso-Query.git
-    $> cd Lasso-Query
+    $> git clone https://bitbucket.org/bfad/lasso-query.git
+    $> cd lasso-query
     $> make
     $> make install
 
 _Note: If you're compiling on Mac OS X, you'll need the 10.5 SDK installed. You can follow the instructions [here](http://hints.macworld.com/article.php?story=20110318050811544) to restore the 10.5 SDK to Xcode 4._
 
-### Install the Source File
+### Install the Source Files
 
-1. Download the query.inc file you want from the raw link. (Latest development file should be https://raw.github.com/bfad/Lasso-Query/master/query.inc)
-2. Move the downloaded file into `$LASSO9_HOME/LassoStartup/`
+1. Download the files in the "src" directory.
+2. Move the downloaded files into `$LASSO9_HOME/LassoStartup/`
 
 
 Examples Using Inline Parameters
