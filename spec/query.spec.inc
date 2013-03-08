@@ -38,6 +38,19 @@ describe(::query) => {
         expect->error(1064, `You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'SELECTD 'a'' at line 1`) => {
             with row in query(-host=#conn, -sql="SELECTD 'a'") do {#row}
         }
+        
+        // This not only checks for errors, but makes sure that it doesn't
+        // behave like inline where the errors don't stop execution. If
+        // something goes wrong, we want it to blow up.
+        expect(error_code_noerror, error_code)
+        local(did_raise_fail) = false
+        handle_error => {
+            #did_raise_fail = true
+            error_reset
+        }
+        query(-host=#conn, -sql="SELECTD 'b'")->run
+        // If all runs correctly, I probably won't even get to here
+        expect(#did_raise_fail)
     }
     
     it("shares the connection when declared and executed inside an inline") => {
@@ -48,10 +61,11 @@ describe(::query) => {
                 #conn_id = #1->con_id
             }
         }
+        
         expect(error_code_noerror, error_code)
         expect(#inline_conn_id, #conn_id)
     }
-    
+
     it("shares the connection when executed inside an inline though declared outside of it") => {
         local(conn_id, inline_conn_id)
         local(query) = query(-sql="SELECT CONNECTION_ID() AS con_id")

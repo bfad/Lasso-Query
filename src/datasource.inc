@@ -73,11 +73,10 @@ define ds_connect => type {
         #ds_data->statement    = #sql
         #ds_data->action       = lcapi_datasourceExecSQL
         
-        local(code, msg)
+        local(err) = null
         protect => {
             handle_error => {
-                #code = error_code
-                #msg  = error_msg
+                #err = (: error_code, error_msg, error_stack)
                 var(__app_profiler__)?
                     $__app_profiler__->inlineEnd
             }
@@ -89,10 +88,8 @@ define ds_connect => type {
             var(__app_profiler__)?
                 $__app_profiler__->inlineEnd
         }
-        void != #code?
-            error_code = #code
-        void != #msg?
-            error_msg = #msg
+        null !== #err?
+            fail(#err->get(1), #err->get(2), #err->get(3))
         
         not .dsInfo->connection
             ? .saveConnection(#ds_data->makeInheritedCopy)
@@ -147,11 +144,10 @@ define query_inline_source => type {parent inline_type
         ..capi and ..dsInfo->action == lcapi_datasourcePrepareSQL ?
             handle => { ..closePrepared }
 
-        local(code, msg)
+        local(err) = null
         protect => {
             handle_error => {
-                #code = error_code
-                #msg  = error_msg
+                #err = (: error_code, error_msg, error_stack)
                 var(__app_profiler__)?
                     $__app_profiler__->inlineEnd
             }
@@ -163,10 +159,8 @@ define query_inline_source => type {parent inline_type
             var(__app_profiler__)?
                 $__app_profiler__->inlineEnd
         }
-        void != #code?
-            error_code = #code
-        void != #msg?
-            error_msg = #msg
+        null !== #err?
+            fail(#err->get(1), #err->get(2), #err->get(3))
         
         return ..dsInfo
     }
