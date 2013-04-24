@@ -21,7 +21,7 @@ define trait_query_result => trait {
         return #position
     }
     provide colPosition() => .c('colPosition')
-    provide colPosition=(rhs) => {.c('colPosition') = #rhs}
+    provide colPosition=(rhs) => {return .c('colPosition') := #rhs}
     
     provide _unknowntag() => { return .c(method_name->asString) }
     provide _unknowntag(rhs) => {
@@ -36,16 +36,16 @@ define trait_query_result => trait {
         return .__data->get(.colPosition(#col))
     }
     provide c=(rhs, col::string) => {
-        .__data->get(.colPosition(#col)) = #rhs
+        return .__data->get(.colPosition(#col)) := #rhs
     }
     provide c() => .c('c')
-    provide c=(rhs::string) => { .c('c') = #rhs }
+    provide c=(rhs::string) => { return .c('c') := #rhs }
     
     // A bit of syntactic sugar that allows for #row('foo') instead of #row->c('foo')
     provide invoke(col::string) => .c(#col)
-    provide invoke=(rhs, col::string) => { .c(#col) = #rhs }
+    provide invoke=(rhs, col::string) => { return .c(#col) := #rhs }
     provide invoke() => .c('invoke')
-    provide invoke=(rhs::string) => { .c('invoke') = #rhs }
+    provide invoke=(rhs::string) => { return .c('invoke') := #rhs }
     
     provide +(s::string) => {
         return .asString + #s
