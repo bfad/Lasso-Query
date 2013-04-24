@@ -29,14 +29,17 @@ define trait_query_result => trait {
         fail_if(not #method_name->endsWith('='), error_code_methodNotFound, error_msg_methodNotFound)
         #method_name->remove(#method_name->size)
         
-        .c(#method_name) = #rhs
+        return .c(#method_name) := #rhs
     }
     
     provide c(col::string) => {
         return .__data->get(.colPosition(#col))
     }
     provide c=(rhs, col::string) => {
-        return .__data->get(.colPosition(#col)) := #rhs
+      // Lasso staticarray->get := bug
+      //return .__data->get(.colPosition(#col)) := #rhs
+      .__data->get(.colPosition(#col)) = #rhs
+      return #rhs
     }
     provide c() => .c('c')
     provide c=(rhs::string) => { return .c('c') := #rhs }

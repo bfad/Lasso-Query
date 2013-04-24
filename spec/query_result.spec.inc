@@ -40,6 +40,13 @@ describe(::query_result) => {
         expect('theta'                , $qr->third)
     }
     
+    it("updates and returns a value when using the := operator") => {
+        local(value) = $qr->first := 'alpha'
+        
+        expect('alpha', #value)
+        expect('alpha', $qr->first)
+    }
+    
     describe("'c' method with arguments") => {
         it("returns the value for the argument it's passed") => {
             expect($values->find('first') , $qr->c('first'))
@@ -59,6 +66,13 @@ describe(::query_result) => {
             expect($values->find('first') , $qr->c('first'))
             expect($values->find('second'), $qr->c('second'))
             expect('alpha'                , $qr->c('third'))
+        }
+        
+        it("updates and returns a value when using the := operator") => {
+            local(value) = $qr->c('first') := 'jazz'
+        
+            expect('jazz', #value)
+            expect('jazz', $qr->c('first'))
         }
     }
     
@@ -89,6 +103,21 @@ describe(::query_result) => {
             #result->c() = 'gamma'
             expect('gamma', #result->c)
             expect('gamma', #result->c())
+        }
+        
+        it("updates and returns a value when using the := operator") => {
+            local(value)
+            local(result) = query_result((:'c'), (:'rhino'))
+            
+            #value = #result->c := 'beta'
+            expect('beta', #result->c)
+            expect('beta', #result->c())
+            expect('beta', #value)
+            
+            #value = #result->c() := 'gamma'
+            expect('gamma', #result->c)
+            expect('gamma', #result->c())
+            expect('gamma', #value)
         }
     }
     
@@ -124,6 +153,18 @@ describe(::query_result) => {
             expect($values->find('first') , $qr('first'))
             expect($values->find('second'), $qr('second'))
             expect('centauri'             , $qr('third'))
+        }
+        
+        it("updates and returns a value when using the := operator") => {
+            local(value) = $qr->invoke('third') := 'quest'
+            
+            expect('quest', #value)
+            expect('quest', $qr->invoke('third'))
+            
+            #value = $qr('third') := 'seek'
+            
+            expect('seek', #value)
+            expect('seek', $qr('third'))
         }
     }
     
@@ -162,6 +203,29 @@ describe(::query_result) => {
             expect('mu', #result())
             
             #result() = 'eta'
+            expect('eta', #result->invoke)
+            expect('eta', #result->invoke())
+            expect('eta', #result())
+        }
+        
+        it("updates and returns a value when using the := operator") => {
+            local(value)
+            local(result) = query_result((:'invoke'), (:'rhino'))
+            
+            #value = #result->invoke := 'sigma'
+            expect('sigma', #value)
+            expect('sigma', #result->invoke)
+            expect('sigma', #result->invoke())
+            expect('sigma', #result())
+            
+            #value = #result->invoke() := 'mu'
+            expect('mu', #value)
+            expect('mu', #result->invoke)
+            expect('mu', #result->invoke())
+            expect('mu', #result())
+            
+            #value = #result() := 'eta'
+            expect('eta', #value)
             expect('eta', #result->invoke)
             expect('eta', #result->invoke())
             expect('eta', #result())
@@ -208,6 +272,21 @@ describe(::query_result) => {
             expect('phi', #result->colPosition())
             
             #result->colPosition() = 'nu'
+            expect('nu', #result->colPosition)
+            expect('nu', #result->colPosition())
+        }
+        
+        it("updates and returns a value when using the := operator") => {
+            local(value)
+            local(result) = query_result((:'colPosition'), (:'rhino'))
+            
+            #value = #result->colPosition := 'phi'
+            expect('phi', #value)
+            expect('phi', #result->colPosition)
+            expect('phi', #result->colPosition())
+            
+            #value = #result->colPosition() := 'nu'
+            expect('nu', #value)
             expect('nu', #result->colPosition)
             expect('nu', #result->colPosition())
         }
