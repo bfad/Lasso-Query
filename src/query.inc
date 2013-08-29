@@ -90,9 +90,14 @@ define query => type {
     public size::integer => {
         .loadData
 
-        return .query->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
+        return  .query->getSet(.set)->get(INLINE_RESULTROWS_POS)->size
     }
-    public foundCount::integer => .size
+    public shownCount::integer => .size
+		public foundCount::integer => {
+				.loadData
+
+				return .query->getSet(.set)->get(INLINE_FOUNDCOUNT_POS)
+		}
     
     public fieldNames::staticarray => {
         .loadData

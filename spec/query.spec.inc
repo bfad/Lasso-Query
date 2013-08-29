@@ -195,11 +195,22 @@ describe(::query) => {
         expect(#query->columnNames->get(2) == 'VERSION()')
     }
     
-    it("has [query->foundCount] return the number of rows") => {
-        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id")
+    it("has [query->foundCount] return the total number of rows found") => {
+        local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id UNION ALL SELECT 8", -maxRecords=1)
 
-        expect(1, #query->foundCount)
+        expect(2, #query->foundCount)
     }
+		
+		it("has [query->size] return just the number of rows returned") => {
+				local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id UNION ALL SELECT 8", -maxRecords=1)
+
+				expect(1, #query->size)
+		}
+		it("has [query->shownCount] return just the number of rows returned") => {
+				local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id UNION ALL SELECT 8", -maxRecords=1)
+
+				expect(1, #query->shownCount)
+		}
     
     it("returns the number of sets when [query->numSets] is called") => {
         local(query) = query(-host=#conn, -sql="SELECT CONNECTION_ID() AS con_id;SELECT VERSION();")
